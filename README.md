@@ -41,7 +41,7 @@ Here's how to get the project running locally for development:
 
 2.  **Install backend dependencies:**
     ```bash
-    cd backend
+    cd server
     npm install
     ```
 
