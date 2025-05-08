@@ -1,0 +1,343 @@
+@font-face {
+  font-family: 'Fustat-ExtraBold';
+  src: url('/public/fonts/Fustat-ExtraBold.ttf');
+}
+
+@font-face {
+  font-family: 'Fustat-Bold';
+  src: url('/public/fonts/Fustat-Bold.ttf');
+}
+
+@font-face {
+  font-family: 'Fustat-Medium';
+  src: url('/public/fonts/Fustat-Medium.ttf');
+}
+
+@font-face {
+  font-family: 'Fustat-Regular';
+  src: url('/public/fonts/Fustat-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'Fustat-SemiBold';
+  src: url('/public/fonts/Fustat-SemiBold.ttf');
+}
+
+
+:root {
+  --gradient: linear-gradient(146deg, #FF0082, #de4a97);
+  --primary: #FF0082;
+  --secondary: #E2CCA1;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+*::-webkit-scrollbar {
+  width: 5px !important;
+}
+
+*::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0) !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--secondary) !important;
+  outline: 0px solid rgba(112, 128, 144, 0) !important;
+  border-radius: 100px;
+}
+
+body {
+  background: white;
+}
+
+body * {
+  font-family: 'Fustat-SemiBold', sans-serif !important;
+  color: #1C1C48;
+  transition: .5s ease;
+}
+
+body :where(h1, h2, h3, .bold) {
+  font-family: 'Fustat-ExtraBold' !important;
+  color: #1C1C48;
+}
+
+a {
+  text-decoration: none !important;
+}
+
+div.logo img {
+  width: 150px;
+}
+
+::selection {
+  background: var(--primary);
+  color: white;
+}
+
+body .text-primary {
+  color: var(--primary) !important;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.155);
+}
+.secondary {
+  background-color: var(--secondary);
+}
+
+.gradient {
+  background: var(--gradient);
+}
+
+.gradient-animate {
+  background: linear-gradient(146deg, #000000, #000000);
+  background-size: 400%;
+  animation: gradient 20s infinite;
+}
+
+.neumorphisim {
+  background: #ffffff;
+  box-shadow: 20px 20px 60px #d9d9d9, -20px -20px 60px #ffffff;
+}
+
+@keyframes gradient {
+
+  0%,
+  100% {
+      background-position: 0% 50%;
+  }
+
+  50% {
+      background-position: 100% 50%;
+  }
+}
+
+.mid {
+  width: 600px;
+}
+
+.small {
+  width: 300px;
+}
+
+.full {
+  height: 100vh;
+}
+
+.fullwidth {
+  width: 100%;
+}
+
+.hide {
+  display: none;
+}
+
+.shadow {
+  box-shadow: 0px 10px 20px #f0f0f0;
+}
+
+.margin-auto {
+  margin: 0px auto !important;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0em !important;
+}
+
+.hide-scrollbar::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0) !important;
+}
+
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(169, 169, 169, 0) !important;
+  outline: 0px solid rgba(112, 128, 144, 0) !important;
+}
+
+/* Login Page */
+.login-page {
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-color: #FFFDF5;
+}
+
+.disapear {
+  transition: .5s ease;
+  opacity: 0;
+  visibility: 0;
+  transform: translateY(10px);
+}
+
+.images-holder {
+  overflow: hidden;
+  position: relative;
+  height: 70vh;
+}
+
+.images-holder::after, .images-holder::before {
+  content: '';
+  width: 100%;
+  height: 100px;
+  position: absolute;
+  left: 0;
+}
+
+.images-holder::before {
+  top: -1px;
+  background: linear-gradient(to bottom, #FFFDF5, transparent);
+  z-index: 2;
+}
+
+.images-holder::after {
+  bottom: -1px;
+  background: linear-gradient(to top, #FFFDF5, transparent);
+}
+
+.homepage-images:nth-child(1) {
+  width: 200px;
+  height: 100%;
+  animation: moveUp 50s infinite linear;
+}
+
+.homepage-images:nth-child(2) {
+  width: 200px;
+  height: 100%;
+  animation: moveDown 50s infinite linear;
+}
+
+.homepage-images img {
+  width: 200px;
+}
+
+@keyframes moveUp {
+  from {
+    transform: translateY(0px);
+  }
+  to {
+    transform: translateY(-500px);
+  }
+}
+
+@keyframes moveDown {
+  from {
+    transform: translateY(-500px);
+  }
+  to {
+    transform: translateY(0px);
+  }
+}
+
+/* Sidebar */
+.sidebar-bg {
+  width: 100%;
+  background-color: #0000002b;
+  position: fixed;
+  left: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  z-index: 20;
+}
+
+.sidebar {
+  width: 400px;
+  background-color: white;
+  padding: 20px;
+  height: 90vh;
+  overflow-y: hidden;
+  margin: auto 10px;
+  transition: .5s ease;
+  transform: translateX(1000px);
+  border-radius: 30px;
+}
+
+div.inner-scroll {
+  height: 100%;
+  overflow-y: scroll;
+}
+
+.slow-show {
+  transition: .5s ease;
+  transform: translateX(0px);
+}
+
+/* navigators  */
+.navigators {
+  padding: 5px;
+  border-radius: 50px;
+  background-color: #EFF1F6;
+  width: fit-content;
+}
+
+.cust-btn {
+  border-radius: 360px;
+  padding: 10px 30px !important;
+  font-size: 12px !important;
+  cursor: pointer;
+}
+
+.rotate {
+  animation: rotate .5s infinite linear;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+table {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 20px;
+  margin-bottom: 20px;
+  border-spacing: 0px;
+  border-collapse: unset;
+}
+
+table td {
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+body div.white-text * {
+  color: white !important;
+}
+
+
+@media screen and (max-width: 600px) {
+  .sidebar {
+      width: 100%;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .remove-grid-med-nd-down {
+      display: block !important;
+  }
+
+  .hide-on-med-and-down {
+      display: none !important;
+  }
+
+  .login-page {
+    background-image: none !important;
+  }
+}
+
+@media screen and (min-width: 900px) {
+  .hide-on-large-only {
+      display: none !important;
+  }
+}
