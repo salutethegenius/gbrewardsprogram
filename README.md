@@ -22,15 +22,16 @@ Loyalty and rewards app for the Downtown Freeport business sector: admin, vendor
    ```
    Runs on port 3000. Set `REACT_APP_SERVER=http://localhost:4040/` in `frontends/bijouxt/.env` for local API.
 
-## Deploy backend to Railway
+## Deploy to Railway (backend + frontend, one URL)
 
 1. Push this repo to GitHub (e.g. `salutethegenius/gbrewardsprogram`).
 2. In [Railway](https://railway.app), **New Project** → **Deploy from GitHub repo** → select this repo.
-3. **Root Directory** can stay default `/` — the root `package.json` runs `cd server && npm install` and `cd server && node app.js`.  
-   Alternatively set **Root Directory** to `server` and use **Start Command** `node app.js`.
-4. Add **Variables**: `ADMIN_TOKEN`, `VENDOR_TOKEN`, `TOKEN` (and optionally `FRONTEND_URL` for QR join links). Leave `PORT` as provided by Railway.
-5. Generate a **Public Domain** for the service so the API is reachable.
-6. SQLite file is ephemeral unless you add a volume; for production consider PostgreSQL and a DB adapter.
+3. **Root Directory**: leave as `/`.
+4. **Build Command**: `npm run build` (builds the React frontend and copies it into `server/public`).
+5. **Start Command**: `npm start` (runs the Node server; serves both API and frontend from one URL).
+6. **Variables**: `ADMIN_TOKEN`, `VENDOR_TOKEN`, `TOKEN`; optionally `FRONTEND_URL` for QR join links. Leave `PORT` as provided by Railway.
+7. Generate a **Public Domain** for the service. One URL serves the app and API (e.g. `https://yourapp.up.railway.app/` = landing, `/admin/login`, `/vendor/login`, `/api/...`).
+8. SQLite is ephemeral unless you add a volume; for production consider PostgreSQL.
 
 ## License
 

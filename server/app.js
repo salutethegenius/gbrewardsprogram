@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const dotenv = require('dotenv');
 const cookieParser = require('cookie-parser');
 const enforce = require('express-sslify');
@@ -36,15 +37,16 @@ app.use((_, res, next) => {
   next();
 });
 
-app.get('/', (req, res) => {
-  res.send('GB Rewards Program API');
-});
-
 app.use(admin_auth);
 app.use(user_auth);
 app.use(vendor_auth);
 app.use(customer_auth);
 app.use(routes);
 app.use(vendor_routes);
+
+// SPA fallback: serve frontend for non-API routes (after static and API)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.listen(PORT, () => console.log(`listening on port ${PORT}`));

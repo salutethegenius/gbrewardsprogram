@@ -2,9 +2,12 @@
   "name": "gbrewardsprogram",
   "version": "1.0.0",
   "private": true,
-  "description": "GB Rewards Program – backend in server/",
+  "description": "GB Rewards Program – backend + frontend",
   "scripts": {
-    "install": "cd server && npm install",
+    "install:server": "cd server && npm install",
+    "install:frontend": "cd frontends/bijouxt && npm ci",
+    "install": "npm run install:server && npm run install:frontend",
+    "build": "cd frontends/bijouxt && REACT_APP_SERVER= npm run build && node -e \"const fs=require('fs'); const path=require('path'); const cwd=process.cwd(); const src=path.join(cwd,'build'); const dest=path.join(cwd,'../../server/public'); fs.mkdirSync(dest,{recursive:true}); fs.readdirSync(src).forEach(f=>{ const s=path.join(src,f); const d=path.join(dest,f); if(fs.statSync(s).isDirectory()) fs.cpSync(s,d,{recursive:true}); else fs.copyFileSync(s,d); });\"",
     "start": "cd server && node app.js"
   },
   "engines": {
