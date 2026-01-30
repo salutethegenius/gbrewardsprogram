@@ -1,0 +1,13 @@
+{
+  "name": "gbrewardsprogram",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GB Rewards Program – backend in server/",
+  "scripts": {
+    "install": "cd server && npm install",
+    "start": "cd server && node app.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
