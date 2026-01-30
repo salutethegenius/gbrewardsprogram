@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Database files (optional: remove if you want to commit seed DB)
+*.db
+
+# IDE and OS
+.DS_Store
+.idea/
+*.log
+
+# Build and cache
+.cursor/
+frontends/bijouxt/build/
+.firebase/

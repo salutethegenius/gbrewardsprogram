@@ -25,14 +25,27 @@
 
 
 :root {
-  --gradient: linear-gradient(146deg, #FF0082, #de4a97);
-  --primary: #FF0082;
-  --secondary: #E2CCA1;
+  --primary-dark: #1a365d;
+  --primary-blue: #0891b2;
+  --accent-gold: #f59e0b;
+  --bg-light: #f8fafc;
+  --bg-dark: #1e293b;
+  --text-dark: #1e293b;
+  --text-light: #f8fafc;
+  --gradient: linear-gradient(146deg, #1a365d, #0891b2);
+  --primary: #1a365d;
+  --secondary: #0891b2;
+  --accent: #f59e0b;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 body {
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
 
 *::-webkit-scrollbar {
@@ -50,18 +63,18 @@ body {
 }
 
 body {
-  background: white;
+  background: var(--bg-light);
 }
 
 body * {
   font-family: 'Fustat-SemiBold', sans-serif !important;
-  color: #1C1C48;
+  color: var(--text-dark);
   transition: .5s ease;
 }
 
 body :where(h1, h2, h3, .bold) {
   font-family: 'Fustat-ExtraBold' !important;
-  color: #1C1C48;
+  color: var(--text-dark);
 }
 
 a {
@@ -98,7 +111,7 @@ body .text-primary {
 }
 
 .gradient-animate {
-  background: linear-gradient(146deg, #000000, #000000);
+  background: linear-gradient(146deg, var(--primary-dark), var(--primary-blue));
   background-size: 400%;
   animation: gradient 20s infinite;
 }
@@ -166,7 +179,7 @@ body .text-primary {
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
-  background-color: #FFFDF5;
+  background-color: var(--bg-light);
 }
 
 .disapear {
@@ -192,13 +205,13 @@ body .text-primary {
 
 .images-holder::before {
   top: -1px;
-  background: linear-gradient(to bottom, #FFFDF5, transparent);
+  background: linear-gradient(to bottom, var(--bg-light), transparent);
   z-index: 2;
 }
 
 .images-holder::after {
   bottom: -1px;
-  background: linear-gradient(to top, #FFFDF5, transparent);
+  background: linear-gradient(to top, var(--bg-light), transparent);
 }
 
 .homepage-images:nth-child(1) {
@@ -316,12 +329,7 @@ body div.white-text * {
 }
 
 
-@media screen and (max-width: 600px) {
-  .sidebar {
-      width: 100%;
-  }
-}
-
+/* Responsive: tablet and below */
 @media screen and (max-width: 900px) {
   .remove-grid-med-nd-down {
       display: block !important;
@@ -334,9 +342,125 @@ body div.white-text * {
   .login-page {
     background-image: none !important;
   }
+
+  .landing-hero {
+    min-height: 60vh !important;
+    padding: 24px 16px !important;
+  }
+
+  .landing-hero h1 {
+    font-size: 1.75rem !important;
+  }
+
+  .landing-hero .hero-tagline {
+    font-size: 1rem !important;
+  }
+
+  .landing-section {
+    padding: 40px 16px !important;
+  }
+
+  .navbar-inner {
+    padding: 12px 16px !important;
+  }
+
+  .navbar-logo {
+    font-size: 1rem !important;
+  }
+
+  .dashboard-header {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    padding: 12px 16px !important;
+  }
+
+  .dashboard-header a {
+    font-size: 0.875rem !important;
+  }
+
+  .footer-inner {
+    padding: 32px 16px 20px !important;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 24px !important;
+  }
 }
 
-@media screen and (min-width: 900px) {
+/* Responsive: mobile */
+@media screen and (max-width: 600px) {
+  .sidebar {
+      width: 100%;
+  }
+
+  .landing-hero {
+    min-height: 55vh !important;
+    padding: 20px 12px !important;
+  }
+
+  .landing-hero h1 {
+    font-size: 1.5rem !important;
+  }
+
+  .landing-hero .hero-tagline {
+    font-size: 0.95rem !important;
+  }
+
+  .landing-section {
+    padding: 32px 12px !important;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  table {
+    font-size: 0.875rem;
+    display: block;
+    overflow-x: auto;
+  }
+
+  table td {
+    padding: 12px 8px;
+  }
+
+  .section-heading {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* Responsive: small mobile */
+@media screen and (max-width: 380px) {
+  .landing-hero h1 {
+    font-size: 1.25rem !important;
+  }
+
+  .navbar-inner {
+    padding: 10px 12px !important;
+  }
+}
+
+/* Touch-friendly: ensure main CTAs have adequate tap size */
+@media (pointer: coarse) and (max-width: 900px) {
+  .landing-hero button,
+  .navbar-inner .hide-on-large-only + div a button,
+  .dashboard-header a {
+    min-height: 44px;
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+}
+
+/* Prevent iOS input zoom: 16px font avoids auto-zoom on focus */
+@media screen and (max-width: 900px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media screen and (min-width: 901px) {
   .hide-on-large-only {
       display: none !important;
   }

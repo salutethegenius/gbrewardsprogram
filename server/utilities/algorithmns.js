@@ -1,8 +1,12 @@
 function cleanUpPhone(phone) {
-    if (phone.includes("+"))
-        return phone.toString().substring(1, phone.length)
-    else
-        return phone
+  if (phone && phone.includes('+'))
+    return phone.toString().substring(1, phone.length);
+  return phone ? phone.toString() : '';
 }
 
-module.exports = { cleanUpPhone }
+function normalizePhoneForLookup(phone) {
+  const cleaned = cleanUpPhone(String(phone).trim());
+  return cleaned.replace(/\D/g, '') || cleaned;
+}
+
+module.exports = { cleanUpPhone, normalizePhoneForLookup };

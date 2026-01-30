@@ -1,17 +1,115 @@
-import Company from "../utilities/Company";
-import Flexbox from "./Flexbox";
+import { Link } from 'react-router-dom';
+import Company from '../utilities/Company';
+
+const footerCol = (title, links) => (
+  <div style={{ minWidth: 140 }}>
+    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-light)', opacity: 0.9, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+      {title}
+    </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {links.map((item) =>
+        item.to != null ? (
+          <Link
+            key={item.label}
+            to={item.to}
+            style={{ color: 'var(--text-light)', opacity: 0.85, fontSize: '0.9rem' }}
+          >
+            {item.label}
+          </Link>
+        ) : (
+          <a
+            key={item.label}
+            href={item.href || '#'}
+            style={{ color: 'var(--text-light)', opacity: 0.85, fontSize: '0.9rem' }}
+          >
+            {item.label}
+          </a>
+        )
+      )}
+    </div>
+  </div>
+);
 
 const Footer = () => {
-    return (
-        <div className="footer" style={{padding: '20px'}}>
-            <Flexbox justifyContent="space-between" alignItems="center">
-                <img className="hide-on-med-and-down" src="/logo.png" alt="logo" style={{ width: '100px', opacity: .4 }} />
-                <small style={{ opacity: .4 }}>
-                    Copyright {(new Date()).getFullYear()} © {Company.name} All rights reserved | <a href={Company.privacy}>Privacy Policy</a> |  <a href={Company.terms}>Terms & Conditions</a>
-                </small>
-            </Flexbox>
+  const quickLinks = [
+    { label: 'Home', to: '/' },
+    { label: 'How It Works', href: '/#how-it-works' },
+    { label: 'For Businesses', href: '/#for-businesses' },
+    { label: 'About', href: '/#about' }
+  ];
+
+  const resources = [
+    { label: 'Customer Portal', to: '/customer/login' },
+    { label: 'Vendor Portal', to: '/vendor/login' },
+    { label: 'Admin (DFBA)', to: '/admin/login' }
+  ];
+
+  const company = [
+    { label: 'About DFBA', href: 'https://gbpa.com/' },
+    { label: 'Vision', href: '/#about' },
+    { label: 'Contact', href: Company.email ? `mailto:${Company.email}` : '#' }
+  ];
+
+  return (
+    <footer
+      style={{
+        background: 'var(--primary-dark)',
+        color: 'var(--text-light)',
+        marginTop: 'auto'
+      }}
+    >
+      <div
+        className="footer-inner"
+        style={{
+          maxWidth: 1200,
+          margin: '0 auto',
+          padding: '48px 24px 24px'
+        }}
+      >
+        <div
+          className="footer-grid"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            gap: 32,
+            marginBottom: 32
+          }}
+        >
+          {footerCol('Quick Links', quickLinks)}
+          {footerCol('Resources', resources)}
+          {footerCol('Company', company)}
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-light)', opacity: 0.9, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Get in Touch
+            </div>
+            <div style={{ color: 'var(--text-light)', opacity: 0.85, fontSize: '0.9rem', lineHeight: 1.6 }}>
+              {Company.address && <div>{Company.address}</div>}
+              {Company.email && <div><a href={`mailto:${Company.email}`} style={{ color: 'inherit' }}>{Company.email}</a></div>}
+              {Company.phone && <div>{Company.phone}</div>}
+              {!Company.address && !Company.email && !Company.phone && <div>Downtown Freeport, Grand Bahama</div>}
+            </div>
+          </div>
         </div>
-    );
-}
+        <div
+          style={{
+            borderTop: '1px solid rgba(255,255,255,0.15)',
+            paddingTop: 24,
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 16
+          }}
+        >
+          <small style={{ opacity: 0.8, fontSize: '0.85rem' }}>
+            © {new Date().getFullYear()} {Company.name}. All rights reserved.
+            {Company.privacy && <><span style={{ margin: '0 8px' }}>|</span><a href={Company.privacy} style={{ color: 'inherit' }}>Privacy Policy</a></>}
+            {Company.terms && <><span style={{ margin: '0 8px' }}>|</span><a href={Company.terms} style={{ color: 'inherit' }}>Terms & Conditions</a></>}
+          </small>
+        </div>
+      </div>
+    </footer>
+  );
+};
 
 export default Footer;

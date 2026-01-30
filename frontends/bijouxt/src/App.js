@@ -1,49 +1,61 @@
-import { createTheme } from '@mui/material'
+import { createTheme } from '@mui/material';
 import { ThemeProvider } from '@emotion/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Login from './Pages/Login';
+import Company from './utilities/Company';
+
+import Landing from './Pages/Landing';
+import Join from './Pages/Join';
+import CustomerLogin from './Pages/customer/Login';
+import CustomerDashboard from './Pages/customer/Dashboard';
+import VendorLogin from './Pages/vendor/Login';
+import VendorDashboard from './Pages/vendor/Dashboard';
+import VendorTransactions from './Pages/vendor/Transactions';
+import VendorSettings from './Pages/vendor/Settings';
 import AdminLogin from './Pages/admin/Login';
 import AdminDashboard from './Pages/admin/Dashboard';
-import Company from './utilities/Company';
-import Signup from './Pages/Signup';
-import Signin from './Pages/Signin';
-import Dashboard from './Pages/Dashboard';
-import Layout from './components/Layout';
+import AdminVendors from './Pages/admin/Vendors';
+import AdminCustomers from './Pages/admin/Customers';
+import AdminTransactions from './Pages/admin/Transactions';
+import AdminSettings from './Pages/admin/Settings';
 
 function App() {
-
   const theme = createTheme({
     palette: {
       primary: {
-        main: '#000'
+        main: '#1a365d'
       },
       secondary: {
-        main: '#7badf9'
+        main: '#0891b2'
       }
     },
-
     typography: {
-      fontFamily: "Fira Sans Extra Condensed",
+      fontFamily: 'Fira Sans Extra Condensed, sans-serif',
       fontWeightLight: 300,
       fontWeightRegular: 400,
       fontWeightBold: 800,
       fontSize: 20
     }
-  })
+  });
 
   return (
     <ThemeProvider theme={theme}>
       <Router>
         <Routes>
-          <Route exact path='/' element={<Login title={"Loyalty Program | " + Company.name} />} />
-          <Route exact path='/signup/:email' element={<Signup title={"Create an account | " + Company.name} />} />
-          <Route exact path='/signin/:email' element={<Signin title={"Sign into account | " + Company.name} />} />
-          <Route exact path="/dashboard" element={<Layout />} >
-            <Route exact path='' element={<Dashboard title={"Dashboard | " + Company.name} />} />
-          </Route>
-          <Route exact path='/admin/' element={<AdminLogin title={"Control Panel | " + Company.name} />} />
-          <Route exact path='/admin/dashboard' element={<AdminDashboard title={"Control Panel | " + Company.name} />} />
-          <Route exact path='*' element={<Login title={"Loyalty Program | " + Company.name} />} />
+          <Route path="/" element={<Landing title={`${Company.name} | ${Company.tagline}`} />} />
+          <Route path="/join" element={<Join title={`Join rewards | ${Company.name}`} />} />
+          <Route path="/customer/login" element={<CustomerLogin title={`Customer | ${Company.name}`} />} />
+          <Route path="/customer/dashboard" element={<CustomerDashboard title={`My Rewards | ${Company.name}`} />} />
+          <Route path="/vendor/login" element={<VendorLogin title={`Vendor Login | ${Company.name}`} />} />
+          <Route path="/vendor/dashboard" element={<VendorDashboard title={`Vendor Dashboard | ${Company.name}`} />} />
+          <Route path="/vendor/transactions" element={<VendorTransactions title={`Transactions | ${Company.name}`} />} />
+          <Route path="/vendor/settings" element={<VendorSettings title={`Settings | ${Company.name}`} />} />
+          <Route path="/admin/login" element={<AdminLogin title={`Admin | ${Company.name}`} />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard title={`Admin Dashboard | ${Company.name}`} />} />
+          <Route path="/admin/vendors" element={<AdminVendors title={`Vendors | ${Company.name}`} />} />
+          <Route path="/admin/customers" element={<AdminCustomers title={`Customers | ${Company.name}`} />} />
+          <Route path="/admin/transactions" element={<AdminTransactions title={`Transactions | ${Company.name}`} />} />
+          <Route path="/admin/settings" element={<AdminSettings title={`Settings | ${Company.name}`} />} />
+          <Route path="*" element={<Landing title={`${Company.name} | ${Company.tagline}`} />} />
         </Routes>
       </Router>
     </ThemeProvider>

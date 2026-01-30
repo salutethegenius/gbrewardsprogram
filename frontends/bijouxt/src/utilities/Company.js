@@ -1,11 +1,11 @@
 const Company = {
-    name: 'Bijoux Terner',
-    email: '',
-    phone: '',
-    privacy: '',
-    terms: '',
-    store_id: 'bijouxterner',
-    points_per_amount: 0.2
-}
+  name: 'GB Rewards Program',
+  tagline: 'Shop Local. Earn Rewards. Support Freeport.',
+  address: 'Downtown Freeport, Grand Bahama',
+  email: 'info@gbrewards.com',
+  phone: '+1 (242) 350-9000',
+  privacy: '',
+  terms: ''
+};
 
-export default Company
+export default Company;

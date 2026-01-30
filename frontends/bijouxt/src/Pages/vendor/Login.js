@@ -7,11 +7,9 @@ import { Typography } from '@mui/material';
 import Spacebox from '../../components/Spacebox';
 import Button from '../../components/Button';
 import requests from '../../handlers/requests';
-import { updateuser } from '../../features/users';
-import { useDispatch } from 'react-redux';
 import Company from '../../utilities/Company';
 
-const AdminLogin = ({ title }) => {
+const VendorLogin = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
     document.querySelector('title').innerHTML = title;
   }
@@ -23,12 +21,11 @@ const AdminLogin = ({ title }) => {
   const [severity, setSeverity] = useState('success');
   const [msg, setToastMsg] = useState('');
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   const submit = () => {
     if (email.includes('@') && password !== '') {
       setLoading(true);
-      const url = `${process.env.REACT_APP_SERVER || ''}api/admin/signin`;
+      const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/signin`;
       requests.makePost(
         url,
         { email, password },
@@ -37,10 +34,9 @@ const AdminLogin = ({ title }) => {
         setToastMsg,
         setLoading,
         (res) => {
-          cookies.setCookies('admin', JSON.stringify(res.admin), 5);
-          cookies.setCookies('admin-token', res.token, 0.5);
-          dispatch(updateuser(res.admin));
-          navigate('/admin/dashboard');
+          cookies.setCookies('vendor', JSON.stringify(res.vendor), 5);
+          cookies.setCookies('vendor-token', res.token, 0.5);
+          navigate('/vendor/dashboard');
         },
         null
       );
@@ -52,29 +48,29 @@ const AdminLogin = ({ title }) => {
   };
 
   useEffect(() => {
-    const token = cookies.getCookies('admin-token');
+    const token = cookies.getCookies('vendor-token');
     if (token && token.length > 10) {
-      navigate('/admin/dashboard');
+      navigate('/vendor/dashboard');
     }
   }, [navigate]);
 
   return (
-    <div className="admin-login-page">
+    <div className="vendor-login-page">
       <Toast open={open} setOpen={setOpen} severity={severity} timer={4000}>
         {msg}
       </Toast>
       <Flexbox
         justifyContent="center"
         alignItems="center"
-        style={{ height: '100vh', background: 'var(--primary-blue)', opacity: 0.95 }}
+        style={{ height: '100vh', background: 'var(--primary-dark)', opacity: 0.95 }}
       >
         <div>
           <Flexbox justifyContent="center" alignItems="center">
-            <Typography variant="h4" className="bold" style={{ color: '#2c3e50' }}>
-              {Company.name}
+            <Typography variant="h5" className="bold" style={{ color: '#2c3e50' }}>
+              {Company.name} – Vendor
             </Typography>
           </Flexbox>
-          <Spacebox padding="10px" />
+          <Spacebox padding="16px" />
           <div
             style={{
               borderRadius: 16,
@@ -85,28 +81,19 @@ const AdminLogin = ({ title }) => {
             }}
           >
             <Typography textAlign="center" className="bold">
-              Admin Sign In (DFBA)
+              Vendor Sign In
             </Typography>
-            <Spacebox padding="10px" />
+            <Spacebox padding="12px" />
             <small>Email</small>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@dfba.org"
-            />
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="store@example.com" />
             <Spacebox padding="8px" />
             <small>Password</small>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <Spacebox padding="16px" />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <Spacebox padding="20px" />
             <Button
               style={{
-                background: 'var(--primary)',
-                color: 'white',
+                background: 'var(--primary-blue)',
+                color: '#2c3e50',
                 width: '100%',
                 padding: '15px 20px',
                 borderRadius: 8
@@ -122,4 +109,4 @@ const AdminLogin = ({ title }) => {
   );
 };
 
-export default AdminLogin;
+export default VendorLogin;

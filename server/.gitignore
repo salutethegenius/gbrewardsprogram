@@ -2,3 +2,12 @@
 
 # dependencies
 /node_modules
+
+# env and secrets
+.env
+.env.*
+!.env.example
+serviceAccountKey.json
+
+# optional: local DB (uncomment if you want to commit a seed DB)
+# *.db
