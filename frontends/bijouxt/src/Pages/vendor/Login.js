@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import cookies from '../../utilities/Cookies';
 import Toast from '../../components/Toast';
 import Flexbox from '../../components/Flexbox';
@@ -65,8 +65,9 @@ const VendorLogin = ({ title }) => {
         style={{ height: '100vh', background: 'var(--primary-dark)', opacity: 0.95 }}
       >
         <div>
-          <Flexbox justifyContent="center" alignItems="center">
-            <Typography variant="h5" className="bold" style={{ color: '#2c3e50' }}>
+          <Flexbox justifyContent="center" alignItems="center" style={{ flexDirection: 'column', gap: 8 }}>
+            <Link to="/" style={{ color: 'var(--text-light)', fontSize: 14, opacity: 0.9 }}>← Back to home page</Link>
+            <Typography variant="h5" className="bold" style={{ color: 'var(--text-light)' }}>
               {Company.name} – Vendor
             </Typography>
           </Flexbox>
@@ -102,6 +103,12 @@ const VendorLogin = ({ title }) => {
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
+            <Spacebox padding="12px" />
+            <Typography textAlign="center" style={{ fontSize: 14 }}>
+              <Link to="/vendor/signup" style={{ color: 'var(--primary-blue)' }}>
+                Create vendor account
+              </Link>
+            </Typography>
           </div>
         </div>
       </Flexbox>

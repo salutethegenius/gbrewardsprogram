@@ -23,6 +23,7 @@ const AdminVendors = ({ title }) => {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', address: '', points_per_dollar: 1 });
   const [submitting, setSubmitting] = useState(false);
+  const [approvingId, setApprovingId] = useState(null);
   const navigate = useNavigate();
   const token = cookies.getCookies('admin-token');
 
@@ -36,9 +37,27 @@ const AdminVendors = ({ title }) => {
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setVendors(res.data || []), null);
   };
 
+  const handleApprove = (id) => {
+    setApprovingId(id);
+    const url = `${process.env.REACT_APP_SERVER || ''}api/admin/vendors/${id}?token=${token}`;
+    requests.makePut(
+      url,
+      { is_active: 1 },
+      setOpen,
+      setSeverity,
+      setToastMsg,
+      (v) => { if (v === false) setApprovingId(null); },
+      () => load(),
+      'Vendor approved'
+    );
+  };
+
   useEffect(() => {
     load();
   }, [navigate, token]);
+
+  const pendingVendors = (vendors || []).filter((v) => !v.is_active);
+  const activeVendors = (vendors || []).filter((v) => v.is_active);
 
   const handleCreate = () => {
     if (!form.name || !form.email || !form.password) {
@@ -104,6 +123,43 @@ const AdminVendors = ({ title }) => {
           </Button>
         </Flexbox>
 
+        {pendingVendors.length > 0 && (
+          <div style={{ background: 'white', padding: 24, borderRadius: 12, marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <Typography className="bold" style={{ marginBottom: 16 }}>Pending approval</Typography>
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <td>Name</td>
+                    <td>Email</td>
+                    <td>Phone</td>
+                    <td>Address</td>
+                    <td></td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingVendors.map((v) => (
+                    <tr key={v.id}>
+                      <td>{v.name}</td>
+                      <td>{v.email}</td>
+                      <td>{v.phone || '—'}</td>
+                      <td>{v.address || '—'}</td>
+                      <td>
+                        <Button
+                          style={{ background: 'var(--accent-gold)', color: 'var(--text-dark)', padding: '8px 16px', borderRadius: 8 }}
+                          handleClick={() => handleApprove(v.id)}
+                        >
+                          {approvingId === v.id ? 'Approving...' : 'Approve'}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
         {showForm && (
           <div style={{ background: 'white', padding: 24, borderRadius: 12, marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
             <Typography className="bold" style={{ marginBottom: 16 }}>New Vendor</Typography>
@@ -151,13 +207,14 @@ const AdminVendors = ({ title }) => {
                   <td>Phone</td>
                   <td>Points/$</td>
                   <td>Status</td>
+                  <td></td>
                 </tr>
               </thead>
               <tbody>
                 {vendors.length === 0 && (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: 24 }}>
-                      No vendors yet. Add one above.
+                    <td colSpan={6} style={{ textAlign: 'center', padding: 24 }}>
+                      No vendors yet. Add one above or wait for pending signups.
                     </td>
                   </tr>
                 )}
@@ -167,7 +224,17 @@ const AdminVendors = ({ title }) => {
                     <td>{v.email}</td>
                     <td>{v.phone || '—'}</td>
                     <td>{v.points_per_dollar}</td>
-                    <td>{v.is_active ? 'Active' : 'Inactive'}</td>
+                    <td>{v.is_active ? 'Active' : 'Pending'}</td>
+                    <td>
+                      {!v.is_active && (
+                        <Button
+                          style={{ background: 'var(--accent-gold)', color: 'var(--text-dark)', padding: '6px 12px', borderRadius: 6 }}
+                          handleClick={() => handleApprove(v.id)}
+                        >
+                          {approvingId === v.id ? '...' : 'Approve'}
+                        </Button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

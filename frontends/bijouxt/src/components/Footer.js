@@ -52,6 +52,7 @@ const Footer = () => {
 
   return (
     <footer
+      className="footer-light"
       style={{
         background: 'var(--primary-dark)',
         color: 'var(--text-light)',
@@ -82,10 +83,10 @@ const Footer = () => {
             <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-light)', opacity: 0.9, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Get in Touch
             </div>
-            <div style={{ color: 'var(--text-light)', opacity: 0.85, fontSize: '0.9rem', lineHeight: 1.6 }}>
+            <div style={{ color: 'var(--text-light)', opacity: 0.9, fontSize: '0.9rem', lineHeight: 1.6 }}>
               {Company.address && <div>{Company.address}</div>}
-              {Company.email && <div><a href={`mailto:${Company.email}`} style={{ color: 'inherit' }}>{Company.email}</a></div>}
-              {Company.phone && <div>{Company.phone}</div>}
+              {Company.email && <div><a href={`mailto:${Company.email}`} style={{ color: '#fff' }}>{Company.email}</a></div>}
+              {Company.phone && <div><a href={`tel:${Company.phone.replace(/\D/g, '')}`} style={{ color: '#fff' }}>{Company.phone}</a></div>}
               {!Company.address && !Company.email && !Company.phone && <div>Downtown Freeport, Grand Bahama</div>}
             </div>
           </div>

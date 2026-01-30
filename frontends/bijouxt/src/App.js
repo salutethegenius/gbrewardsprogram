@@ -8,6 +8,7 @@ import Join from './Pages/Join';
 import CustomerLogin from './Pages/customer/Login';
 import CustomerDashboard from './Pages/customer/Dashboard';
 import VendorLogin from './Pages/vendor/Login';
+import VendorSignup from './Pages/vendor/Signup';
 import VendorDashboard from './Pages/vendor/Dashboard';
 import VendorTransactions from './Pages/vendor/Transactions';
 import VendorSettings from './Pages/vendor/Settings';
@@ -46,6 +47,7 @@ function App() {
           <Route path="/customer/login" element={<CustomerLogin title={`Customer | ${Company.name}`} />} />
           <Route path="/customer/dashboard" element={<CustomerDashboard title={`My Rewards | ${Company.name}`} />} />
           <Route path="/vendor/login" element={<VendorLogin title={`Vendor Login | ${Company.name}`} />} />
+          <Route path="/vendor/signup" element={<VendorSignup title={`Vendor Sign Up | ${Company.name}`} />} />
           <Route path="/vendor/dashboard" element={<VendorDashboard title={`Vendor Dashboard | ${Company.name}`} />} />
           <Route path="/vendor/transactions" element={<VendorTransactions title={`Transactions | ${Company.name}`} />} />
           <Route path="/vendor/settings" element={<VendorSettings title={`Settings | ${Company.name}`} />} />

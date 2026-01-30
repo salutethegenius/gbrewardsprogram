@@ -20,23 +20,25 @@ router.post('/api/admin/signin', (req, res) => {
         }
         bcrypt.compare(val.password, row.password, (err, result) => {
           if (err) {
-            res.status(500).json({ success: false, error: err, msg: 'Server error' });
+            console.error('Bcrypt error:', err);
+            res.status(500).json({ success: false, msg: 'Server error' });
             return;
           }
           if (!result) {
-            res.status(401).json({ success: false, error: 'Password Mismatch', msg: 'Invalid password' });
+            res.status(401).json({ success: false, msg: 'Invalid password' });
             return;
           }
-          const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.ADMIN_TOKEN || 'admin-secret');
+          const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.ADMIN_TOKEN || 'admin-secret', { expiresIn: '8h' });
           const admin = { id: row.id, store_id: row.store_id, email: row.email, fullname: row.fullname };
           res.status(200).json({ success: true, admin, token });
         });
       })
       .catch((err) => {
-        res.status(401).json({ success: false, error: err, msg: 'Invalid request data' });
+        res.status(401).json({ success: false, msg: 'Invalid request data' });
       });
   } catch (err) {
-    res.status(500).json({ success: false, error: err, msg: 'Server error' });
+    console.error('Admin signin error:', err);
+    res.status(500).json({ success: false, msg: 'Server error' });
   }
 });
 

@@ -18,3 +18,9 @@ node_modules/
 .cursor/
 frontends/bijouxt/build/
 .firebase/
+
+# Large media files (not for repo)
+*.jpg
+*.jpeg
+*.mp4
+!public/**/*.mp4

@@ -45,13 +45,7 @@ const VendorDashboard = ({ title }) => {
     }
     setLoading(true);
     const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/dashboard?token=${token}`;
-    // #region agent log
-    fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'vendor/Dashboard.js:load', message: 'Dashboard fetch', data: { urlSnippet: url.slice(-55), hasToken: !!token }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'B' }) }).catch(() => {});
-    // #endregion
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'vendor/Dashboard.js:load:success', message: 'Dashboard loaded', data: { success: !!res.success, hasStats: !!res.stats }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'B' }) }).catch(() => {});
-      // #endregion
       setStats(res.stats);
       setRecentTx(res.recentTransactions || []);
     }, null);
@@ -60,15 +54,9 @@ const VendorDashboard = ({ title }) => {
   const loadJoinInfo = () => {
     if (!token || token.length < 10) return;
     const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/join-info?token=${token}`;
-    // #region agent log
-    fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'vendor/Dashboard.js:joinInfo', message: 'Join-info fetch', data: { urlSnippet: url.slice(-50) }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'E' }) }).catch(() => {});
-    // #endregion
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
-        // #region agent log
-        fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'vendor/Dashboard.js:joinInfo:res', message: 'Join-info response', data: { success: !!data.success, hasJoinUrl: !!data.joinUrl }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'E' }) }).catch(() => {});
-        // #endregion
         if (data.success && data.joinUrl) {
           setJoinUrl(data.joinUrl);
           setVendorName(data.vendorName || '');

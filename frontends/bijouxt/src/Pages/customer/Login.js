@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import cookies from '../../utilities/Cookies';
 import Toast from '../../components/Toast';
 import Flexbox from '../../components/Flexbox';
@@ -23,9 +23,6 @@ const CustomerLogin = ({ title }) => {
 
   const submit = () => {
     const trimmed = (phone || '').trim().replace(/\D/g, '');
-    // #region agent log
-    if (typeof fetch !== 'undefined') fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'customer/Login.js:submit', message: 'Customer login submit', data: { phoneLen: trimmed.length, valid: trimmed.length >= 6 }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'B' }) }).catch(() => {});
-    // #endregion
     if (trimmed.length < 6) {
       setToastMsg('Enter a valid phone number');
       setSeverity('error');
@@ -42,9 +39,6 @@ const CustomerLogin = ({ title }) => {
       setToastMsg,
       setLoading,
       (res) => {
-        // #region agent log
-        if (typeof fetch !== 'undefined') fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'customer/Login.js:success', message: 'Customer login success', data: { hasCustomer: !!res.customer, hasToken: !!res.token }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'B' }) }).catch(() => {});
-        // #endregion
         cookies.setCookies('customer', JSON.stringify(res.customer), 5);
         cookies.setCookies('customer-token', res.token, 0.5);
         navigate('/customer/dashboard');
@@ -71,8 +65,9 @@ const CustomerLogin = ({ title }) => {
         style={{ height: '100vh', background: 'var(--primary-dark)', opacity: 0.95 }}
       >
         <div>
-          <Flexbox justifyContent="center" alignItems="center">
-            <Typography variant="h5" className="bold" style={{ color: '#2c3e50' }}>
+          <Flexbox justifyContent="center" alignItems="center" style={{ flexDirection: 'column', gap: 8 }}>
+            <Link to="/" style={{ color: 'var(--text-light)', fontSize: 14, opacity: 0.9 }}>← Back to home page</Link>
+            <Typography variant="h5" className="bold" style={{ color: 'var(--text-light)' }}>
               {Company.name}
             </Typography>
           </Flexbox>

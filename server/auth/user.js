@@ -48,7 +48,7 @@ router.post('/api/user/signin', (req, res) => {
             res.status(401).json({ success: false, error: 'Password Mismatch', msg: 'Invalid password' });
             return;
           }
-          const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.TOKEN || 'user-secret');
+          const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.TOKEN || 'user-secret', { expiresIn: '7d' });
           const user = {
             id: row.id,
             store_id: row.store_id,
@@ -89,7 +89,7 @@ router.post('/api/user/signup', (req, res) => {
           VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
         `).run(id, storeId, val.email, hash, val.fullname || '', val.phone || '', val.country_code || '', Date.now());
         const row = db.prepare('SELECT id, store_id, email, fullname, phone, points FROM users WHERE id = ?').get(id);
-        const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.TOKEN || 'user-secret');
+        const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.TOKEN || 'user-secret', { expiresIn: '7d' });
         const user = {
           id: row.id,
           store_id: row.store_id,

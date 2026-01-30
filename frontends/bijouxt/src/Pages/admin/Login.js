@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import cookies from '../../utilities/Cookies';
 import Toast from '../../components/Toast';
 import Flexbox from '../../components/Flexbox';
@@ -69,8 +69,9 @@ const AdminLogin = ({ title }) => {
         style={{ height: '100vh', background: 'var(--primary-blue)', opacity: 0.95 }}
       >
         <div>
-          <Flexbox justifyContent="center" alignItems="center">
-            <Typography variant="h4" className="bold" style={{ color: '#2c3e50' }}>
+          <Flexbox justifyContent="center" alignItems="center" style={{ flexDirection: 'column', gap: 8 }}>
+            <Link to="/" style={{ color: 'var(--text-light)', fontSize: 14, opacity: 0.9 }}>← Back to home page</Link>
+            <Typography variant="h4" className="bold" style={{ color: 'var(--text-light)' }}>
               {Company.name}
             </Typography>
           </Flexbox>

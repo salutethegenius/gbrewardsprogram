@@ -74,12 +74,12 @@ const Landing = ({ title }) => {
             left: 0,
             width: '100%',
             height: '100%',
-            background: 'rgba(30, 41, 59, 0.75)',
+            background: 'rgba(30, 41, 59, 0.45)',
             zIndex: 1
           }}
         />
-        <Flexbox flexDirection="column" alignItems="center" style={{ textAlign: 'center', position: 'relative', zIndex: 2 }}>
-          <Typography variant="h1" component="h1" style={{ fontSize: '3rem', color: 'var(--text-light)', marginBottom: 24, fontWeight: 800 }}>
+        <Flexbox flexDirection="column" alignItems="center" style={{ flexDirection: 'column', textAlign: 'center', position: 'relative', zIndex: 2 }}>
+          <Typography variant="h1" component="h1" style={{ fontSize: '3rem', color: 'var(--text-light)', marginBottom: 12, fontWeight: 800 }}>
             {Company.name}
           </Typography>
           <Typography className="hero-tagline" style={{ fontSize: '1.35rem', color: 'var(--text-light)', opacity: 0.95, fontWeight: 600, marginBottom: 40 }}>

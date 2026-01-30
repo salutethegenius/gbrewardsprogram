@@ -23,21 +23,12 @@ const AdminDashboard = ({ title }) => {
   const token = cookies.getCookies('admin-token');
 
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'admin/Dashboard.js:useEffect', message: 'Admin dashboard mount', data: { hasToken: !!token, tokenLen: token ? token.length : 0, redirect: !token || (token && token.length < 10) }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'E' }) }).catch(() => {});
-    // #endregion
     if (!token || token.length < 10) {
       navigate('/admin/login');
       return;
     }
     const url = `${process.env.REACT_APP_SERVER || ''}api/admin/dashboard?token=${token}`;
-    // #region agent log
-    fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'admin/Dashboard.js:fetchUrl', message: 'Admin dashboard API url', data: { urlSnippet: url.slice(-60) }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'A' }) }).catch(() => {});
-    // #endregion
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'admin/Dashboard.js:stats', message: 'Admin dashboard stats received', data: { success: !!res.success, hasStats: !!res.stats, statsKeys: res.stats ? Object.keys(res.stats) : [] }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'A' }) }).catch(() => {});
-      // #endregion
       setStats(res.stats);
     }, null);
   }, [navigate, token]);

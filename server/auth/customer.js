@@ -24,14 +24,16 @@ router.post('/api/customer/login', (req, res) => {
           db.prepare('INSERT OR IGNORE INTO shared_pool (customer_id, points) VALUES (?, 0)').run(id);
           customer = { id, phone, fullname: '', email: '', created_at: Date.now() };
         }
-        const token = jwt.sign({ id: customer.id }, process.env.TOKEN);
+        const secret = process.env.TOKEN || 'user-secret';
+        const token = jwt.sign({ id: customer.id }, secret, { expiresIn: '7d' });
         res.status(200).json({ success: true, customer, token });
       })
       .catch((err) => {
-        res.status(401).json({ success: false, error: err, msg: 'Invalid phone number' });
+        res.status(401).json({ success: false, msg: 'Invalid phone number' });
       });
   } catch (err) {
-    res.status(500).json({ success: false, error: err, msg: 'Server error' });
+    console.error('Customer login error:', err);
+    res.status(500).json({ success: false, msg: 'Server error' });
   }
 });
 

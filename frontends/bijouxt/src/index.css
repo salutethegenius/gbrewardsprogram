@@ -81,6 +81,15 @@ a {
   text-decoration: none !important;
 }
 
+/* Footer: force white text (override body * color) */
+.footer-light,
+.footer-light * {
+  color: var(--text-light) !important;
+}
+.footer-light a:hover {
+  opacity: 0.9;
+}
+
 div.logo img {
   width: 150px;
 }
@@ -328,6 +337,10 @@ body div.white-text * {
   color: white !important;
 }
 
+/* Hero video: brighter so it shows through overlay */
+.landing-hero-video {
+  filter: brightness(1.15);
+}
 
 /* Responsive: tablet and below */
 @media screen and (max-width: 900px) {

@@ -11,9 +11,6 @@ const VENDOR_SECRET = process.env.VENDOR_TOKEN || 'vendor-secret';
 router.post('/api/join', (req, res) => {
   try {
     const { vendor_id, phone, fullname } = req.body || {};
-    // #region agent log
-    try { fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'routes/vendor.js:join:body', message: 'POST /api/join', data: { hasVendorId: !!vendor_id, phoneLen: (phone || '').toString().trim().length }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'C' }) }).catch(() => {}); } catch (_) {}
-    // #endregion
     const phoneNorm = normalizePhoneForLookup((phone || '').toString().trim());
     if (phoneNorm.length < 6) {
       res.status(400).json({ success: false, msg: 'Valid phone number required' });
@@ -41,14 +38,8 @@ router.post('/api/join', (req, res) => {
       INSERT INTO balances (customer_id, vendor_id, points) VALUES (?, ?, 0)
       ON CONFLICT(customer_id, vendor_id) DO NOTHING
     `).run(customer.id, vendor_id);
-    // #region agent log
-    try { fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'routes/vendor.js:join:success', message: 'Join success', data: { customerId: !!customer.id }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'C' }) }).catch(() => {}); } catch (_) {}
-    // #endregion
     res.status(200).json({ success: true, customer: { id: customer.id, phone: customer.phone, fullname: customer.fullname } });
   } catch (e) {
-    // #region agent log
-    try { fetch('http://127.0.0.1:7254/ingest/e16fbffe-9c0e-4a07-81be-22b06d107449', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'routes/vendor.js:join:catch', message: 'Join error', data: { err: e.message }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'C' }) }).catch(() => {}); } catch (_) {}
-    // #endregion
     res.status(500).json({ success: false, error: e.message });
   }
 });

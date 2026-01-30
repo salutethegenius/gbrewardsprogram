@@ -7,7 +7,7 @@ const { verify } = require('../auth/verify');
 router.get('/api/customer/balances', verify, (req, res) => {
   try {
     const token = req.query.token;
-    const decoded = jwt.verify(token, process.env.TOKEN);
+    const decoded = jwt.verify(token, process.env.TOKEN || 'user-secret');
     const customerId = decoded.id;
     const balances = db.prepare(`
       SELECT b.vendor_id, b.points, v.name as vendor_name
@@ -31,7 +31,7 @@ router.get('/api/customer/balances', verify, (req, res) => {
 router.get('/api/customer/transactions', verify, (req, res) => {
   try {
     const token = req.query.token;
-    const decoded = jwt.verify(token, process.env.TOKEN);
+    const decoded = jwt.verify(token, process.env.TOKEN || 'user-secret');
     const customerId = decoded.id;
     const limit = Math.min(parseInt(req.query.limit) || 50, 200);
     const offset = parseInt(req.query.offset) || 0;
@@ -51,7 +51,7 @@ router.get('/api/customer/transactions', verify, (req, res) => {
 router.get('/api/customer/me', verify, (req, res) => {
   try {
     const token = req.query.token;
-    const decoded = jwt.verify(token, process.env.TOKEN);
+    const decoded = jwt.verify(token, process.env.TOKEN || 'user-secret');
     const customer = db.prepare('SELECT id, phone, fullname, email, created_at FROM customers WHERE id = ?').get(decoded.id);
     if (!customer) {
       res.status(404).json({ success: false, msg: 'Customer not found' });
