@@ -37,7 +37,7 @@ const Join = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/join`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/join`;
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

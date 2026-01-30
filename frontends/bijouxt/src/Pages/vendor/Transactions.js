@@ -26,7 +26,7 @@ const VendorTransactions = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/transactions?token=${token}&limit=100`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/transactions?token=${token}&limit=100`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setData(res.data || []), null);
   }, [navigate, token]);
 

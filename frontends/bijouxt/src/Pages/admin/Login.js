@@ -28,7 +28,10 @@ const AdminLogin = ({ title }) => {
   const submit = () => {
     if (email.includes('@') && password !== '') {
       setLoading(true);
-      const url = `${process.env.REACT_APP_SERVER || ''}api/admin/signin`;
+      const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/signin`;
+      // #region agent log
+      console.log('[DEBUG] Admin login URL:', url, '| REACT_APP_SERVER:', process.env.REACT_APP_SERVER);
+      // #endregion
       requests.makePost(
         url,
         { email, password },

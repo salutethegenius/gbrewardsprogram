@@ -40,7 +40,7 @@ const VendorSignup = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/signup`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/signup`;
     requests.makePost(
       url,
       {

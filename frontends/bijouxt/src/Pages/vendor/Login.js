@@ -25,7 +25,7 @@ const VendorLogin = ({ title }) => {
   const submit = () => {
     if (email.includes('@') && password !== '') {
       setLoading(true);
-      const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/signin`;
+      const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/signin`;
       requests.makePost(
         url,
         { email, password },

@@ -30,7 +30,7 @@ const CustomerLogin = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/customer/login`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/customer/login`;
     requests.makePost(
       url,
       { phone: trimmed },

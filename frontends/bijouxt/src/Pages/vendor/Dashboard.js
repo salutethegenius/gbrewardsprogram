@@ -44,7 +44,7 @@ const VendorDashboard = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/dashboard?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/dashboard?token=${token}`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setStats(res.stats);
       setRecentTx(res.recentTransactions || []);
@@ -53,7 +53,7 @@ const VendorDashboard = ({ title }) => {
 
   const loadJoinInfo = () => {
     if (!token || token.length < 10) return;
-    const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/join-info?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/join-info?token=${token}`;
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
@@ -74,7 +74,7 @@ const VendorDashboard = ({ title }) => {
       return;
     }
     setManualLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/customers?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/customers?token=${token}`;
     requests.makePost(
       url,
       { phone: trimmed, fullname: (manualFullname || '').trim() },
@@ -108,7 +108,7 @@ const VendorDashboard = ({ title }) => {
     }
     setLookupLoading(true);
     setCustomer(null);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/customer?token=${token}&phone=${encodeURIComponent(phone.trim())}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/customer?token=${token}&phone=${encodeURIComponent(phone.trim())}`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLookupLoading, (res) => setCustomer(res.customer), null);
   };
 
@@ -120,7 +120,7 @@ const VendorDashboard = ({ title }) => {
       return;
     }
     setAwardLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/award?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/award?token=${token}`;
     requests.makePost(
       url,
       { phone: customer.phone, amount: parseFloat(amount) },
@@ -149,7 +149,7 @@ const VendorDashboard = ({ title }) => {
       return;
     }
     setRedeemLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/redeem?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/redeem?token=${token}`;
     requests.makePost(
       url,
       { phone: customer.phone, points: pts, use_shared: !!useShared },

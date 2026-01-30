@@ -33,13 +33,13 @@ const AdminVendors = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/admin/vendors?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/vendors?token=${token}`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setVendors(res.data || []), null);
   };
 
   const handleApprove = (id) => {
     setApprovingId(id);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/admin/vendors/${id}?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/vendors/${id}?token=${token}`;
     requests.makePut(
       url,
       { is_active: 1 },
@@ -67,7 +67,7 @@ const AdminVendors = ({ title }) => {
       return;
     }
     setSubmitting(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/admin/vendors?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/vendors?token=${token}`;
     requests.makePost(
       url,
       {

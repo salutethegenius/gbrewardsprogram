@@ -31,7 +31,7 @@ const VendorSettings = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/settings?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/settings?token=${token}`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setVendor(res.vendor);
       setForm({
@@ -45,7 +45,7 @@ const VendorSettings = ({ title }) => {
 
   const handleSave = () => {
     setSaving(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/vendor/settings?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/settings?token=${token}`;
     requests.makePut(
       url,
       { name: form.name, phone: form.phone, address: form.address, points_per_dollar: form.points_per_dollar },

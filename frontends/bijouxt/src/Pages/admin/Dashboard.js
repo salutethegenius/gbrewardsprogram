@@ -27,7 +27,7 @@ const AdminDashboard = ({ title }) => {
       navigate('/admin/login');
       return;
     }
-    const url = `${process.env.REACT_APP_SERVER || ''}api/admin/dashboard?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/dashboard?token=${token}`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setStats(res.stats);
     }, null);

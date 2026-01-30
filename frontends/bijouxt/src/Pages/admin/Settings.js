@@ -31,7 +31,7 @@ const AdminSettings = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/admin/settings?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/settings?token=${token}`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setSettings(res.settings || {});
       setSharedPct(parseFloat(res.settings?.shared_rewards_pct) || 20);
@@ -40,7 +40,7 @@ const AdminSettings = ({ title }) => {
 
   const handleSave = () => {
     setSaving(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/admin/settings?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/settings?token=${token}`;
     requests.makePut(
       url,
       { shared_rewards_pct: Math.max(0, Math.min(100, sharedPct)) },

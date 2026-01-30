@@ -32,13 +32,13 @@ const CustomerDashboard = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/customer/balances?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/customer/balances?token=${token}`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setVendorBalances(res.vendorBalances || []);
       setSharedPoints(res.sharedPoints ?? 0);
     }, null);
     setTxLoading(true);
-    const txUrl = `${process.env.REACT_APP_SERVER || ''}api/customer/transactions?token=${token}&limit=50`;
+    const txUrl = `${process.env.REACT_APP_SERVER || '/'}api/customer/transactions?token=${token}&limit=50`;
     requests.makeGet(txUrl, setOpen, setSeverity, setToastMsg, setTxLoading, (res) => setTransactions(res.data || []), null);
   }, [navigate, token]);
 

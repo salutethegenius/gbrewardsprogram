@@ -26,7 +26,7 @@ const AdminCustomers = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || ''}api/admin/customers?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/customers?token=${token}`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setCustomers(res.data || []), null);
   }, [navigate, token]);
 
