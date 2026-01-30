@@ -27,7 +27,7 @@ Loyalty and rewards app for the Downtown Freeport business sector: admin, vendor
 1. Push this repo to GitHub (e.g. `salutethegenius/gbrewardsprogram`).
 2. In [Railway](https://railway.app), **New Project** → **Deploy from GitHub repo** → select this repo.
 3. **Root Directory**: leave as `/`.
-4. **Build Command**: `npm run build` (builds the React frontend and copies it into `server/public`).
+4. **Build Command**: `npm run build` (builds the React frontend and copies it into `server/public`). If the build fails, add variable **`CI`** = `false` so React build warnings don’t fail the deploy.
 5. **Start Command**: `npm start` (runs the Node server; serves both API and frontend from one URL).
 6. **Variables**: `ADMIN_TOKEN`, `VENDOR_TOKEN`, `TOKEN`; optionally `FRONTEND_URL` for QR join links. Leave `PORT` as provided by Railway.
 7. Generate a **Public Domain** for the service. One URL serves the app and API (e.g. `https://yourapp.up.railway.app/` = landing, `/admin/login`, `/vendor/login`, `/api/...`).
