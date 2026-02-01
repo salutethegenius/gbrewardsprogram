@@ -35,6 +35,7 @@ const VendorDashboard = ({ title }) => {
   const [manualPhone, setManualPhone] = useState('');
   const [manualFullname, setManualFullname] = useState('');
   const [manualLoading, setManualLoading] = useState(false);
+  const [pointRedemptionValue, setPointRedemptionValue] = useState(0.1);
   const navigate = useNavigate();
   const token = cookies.getCookies('vendor-token');
 
@@ -109,7 +110,10 @@ const VendorDashboard = ({ title }) => {
     setLookupLoading(true);
     setCustomer(null);
     const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/customer?token=${token}&phone=${encodeURIComponent(phone.trim())}`;
-    requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLookupLoading, (res) => setCustomer(res.customer), null);
+    requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLookupLoading, (res) => {
+      setCustomer(res.customer);
+      setPointRedemptionValue(res.pointRedemptionValue ?? 0.1);
+    }, null);
   };
 
   const handleAward = () => {
@@ -280,8 +284,22 @@ const VendorDashboard = ({ title }) => {
                   <div style={{ padding: 16, background: 'var(--bg-light)', borderRadius: 8 }}>
                     <Typography className="bold">{customer.fullname || 'Customer'}</Typography>
                     <Typography style={{ fontSize: 14 }}>Phone: {customer.phone}</Typography>
-                    <Typography style={{ fontSize: 14 }}>Store points: {customer.vendorPoints ?? 0}</Typography>
-                    <Typography style={{ fontSize: 14 }}>Shared points: {customer.sharedPoints ?? 0}</Typography>
+                  </div>
+                  <Spacebox padding="16px" />
+                  <div style={{ padding: 20, background: 'var(--primary-blue)', borderRadius: 12, marginBottom: 16 }}>
+                    <Typography className="bold" style={{ fontSize: 18, color: '#fff', marginBottom: 12 }}>Available Savings</Typography>
+                    <Typography style={{ fontSize: 16, color: 'rgba(255,255,255,0.95)' }}>
+                      Store points: {customer.vendorPoints ?? 0} pts = ${(customer.vendorPointsValue ?? 0).toFixed(2)}
+                    </Typography>
+                    <Typography style={{ fontSize: 16, color: 'rgba(255,255,255,0.95)' }}>
+                      Shared pool: {customer.sharedPoints ?? 0} pts = ${(customer.sharedPointsValue ?? 0).toFixed(2)}
+                    </Typography>
+                    <Typography className="bold" style={{ fontSize: 20, color: '#fff', marginTop: 12 }}>
+                      Total available: ${((customer.vendorPointsValue ?? 0) + (customer.sharedPointsValue ?? 0)).toFixed(2)} off
+                    </Typography>
+                    <Typography style={{ fontSize: 14, color: 'rgba(255,255,255,0.9)', marginTop: 8 }}>
+                      Customer can save up to ${((customer.vendorPointsValue ?? 0) + (customer.sharedPointsValue ?? 0)).toFixed(2)} on their purchase. 1 point = ${pointRedemptionValue.toFixed(2)} everywhere.
+                    </Typography>
                   </div>
                   <Spacebox padding="16px" />
                   <Flexbox style={{ gap: 16, flexWrap: 'wrap' }}>

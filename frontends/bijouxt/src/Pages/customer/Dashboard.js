@@ -21,6 +21,8 @@ const CustomerDashboard = ({ title }) => {
   const [loading, setLoading] = useState(true);
   const [vendorBalances, setVendorBalances] = useState([]);
   const [sharedPoints, setSharedPoints] = useState(0);
+  const [sharedPointsValue, setSharedPointsValue] = useState(0);
+  const [pointRedemptionValue, setPointRedemptionValue] = useState(0.1);
   const [txLoading, setTxLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
   const navigate = useNavigate();
@@ -36,6 +38,8 @@ const CustomerDashboard = ({ title }) => {
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setVendorBalances(res.vendorBalances || []);
       setSharedPoints(res.sharedPoints ?? 0);
+      setSharedPointsValue(res.sharedPointsValue ?? 0);
+      setPointRedemptionValue(res.pointRedemptionValue ?? 0.1);
     }, null);
     setTxLoading(true);
     const txUrl = `${process.env.REACT_APP_SERVER || '/'}api/customer/transactions?token=${token}&limit=50`;
@@ -57,6 +61,8 @@ const CustomerDashboard = ({ title }) => {
   };
 
   const totalVendorPoints = vendorBalances.reduce((s, b) => s + (b.points || 0), 0);
+  const totalVendorPointsValue = vendorBalances.reduce((s, b) => s + (b.pointsValue ?? 0), 0);
+  const totalAvailableValue = totalVendorPointsValue + sharedPointsValue;
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-light)' }}>
@@ -82,14 +88,19 @@ const CustomerDashboard = ({ title }) => {
               <div style={{ background: 'var(--primary-blue)', borderRadius: 12, padding: 24, minWidth: 160 }}>
                 <Typography style={{ fontSize: 14, opacity: 0.9, color: '#fff' }}>Store points</Typography>
                 <Typography variant="h4" className="bold" style={{ color: '#fff' }}>{totalVendorPoints.toFixed(1)}</Typography>
+                <Typography style={{ fontSize: 14, color: '#fff' }}>${totalVendorPointsValue.toFixed(2)} value</Typography>
                 <Typography style={{ fontSize: 12, opacity: 0.8, color: '#fff' }}>Redeem at each store</Typography>
               </div>
               <div style={{ background: 'var(--accent-gold)', borderRadius: 12, padding: 24, minWidth: 160 }}>
                 <Typography style={{ fontSize: 14, opacity: 0.9 }}>Shared points</Typography>
                 <Typography variant="h4" className="bold">{sharedPoints.toFixed(1)}</Typography>
-                <Typography style={{ fontSize: 12, opacity: 0.8 }}>Redeem anywhere</Typography>
+                <Typography style={{ fontSize: 14 }}>${sharedPointsValue.toFixed(2)} value</Typography>
+                <Typography style={{ fontSize: 12, opacity: 0.8 }}>Redeem anywhere in the network</Typography>
               </div>
             </Flexbox>
+            <Typography style={{ fontSize: 14, opacity: 0.85, marginBottom: 16 }}>
+              Total available: ${totalAvailableValue.toFixed(2)} (1 point = ${pointRedemptionValue.toFixed(2)} everywhere)
+            </Typography>
 
             <Typography className="bold" style={{ marginBottom: 12 }}>Points by store</Typography>
             <div style={{ background: 'white', borderRadius: 12, overflow: 'hidden', marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
@@ -110,7 +121,7 @@ const CustomerDashboard = ({ title }) => {
                   }}
                 >
                   <Typography className="bold">{b.vendor_name || 'Store'}</Typography>
-                  <Typography>{b.points?.toFixed(1) ?? 0} pts</Typography>
+                  <Typography>{b.points?.toFixed(1) ?? 0} pts = ${(b.pointsValue ?? 0).toFixed(2)}</Typography>
                 </div>
               ))}
             </div>

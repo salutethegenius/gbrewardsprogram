@@ -17,10 +17,19 @@ router.get('/api/customer/balances', verify, (req, res) => {
       ORDER BY b.points DESC
     `).all(customerId);
     const shared = db.prepare('SELECT points FROM shared_pool WHERE customer_id = ?').get(customerId);
+    const redemptionSetting = db.prepare("SELECT value FROM settings WHERE key = 'point_redemption_value'").get();
+    const pointRedemptionValue = redemptionSetting ? parseFloat(redemptionSetting.value) : 0.10;
+    const sharedPts = shared ? shared.points : 0;
+    const vendorBalancesWithValue = balances.map((b) => ({
+      ...b,
+      pointsValue: Math.round((b.points || 0) * pointRedemptionValue * 100) / 100
+    }));
     res.status(200).json({
       success: true,
-      vendorBalances: balances,
-      sharedPoints: shared ? shared.points : 0
+      vendorBalances: vendorBalancesWithValue,
+      sharedPoints: sharedPts,
+      sharedPointsValue: Math.round(sharedPts * pointRedemptionValue * 100) / 100,
+      pointRedemptionValue
     });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });

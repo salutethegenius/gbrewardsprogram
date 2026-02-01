@@ -143,13 +143,20 @@ router.get('/api/vendor/customer', vendor_verify, (req, res) => {
     const vendorId = decoded.id;
     const balance = db.prepare('SELECT points FROM balances WHERE customer_id = ? AND vendor_id = ?').get(customer.id, vendorId);
     const shared = db.prepare('SELECT points FROM shared_pool WHERE customer_id = ?').get(customer.id);
+    const redemptionSetting = db.prepare("SELECT value FROM settings WHERE key = 'point_redemption_value'").get();
+    const pointRedemptionValue = redemptionSetting ? parseFloat(redemptionSetting.value) : 0.10;
+    const vendorPoints = balance ? balance.points : 0;
+    const sharedPoints = shared ? shared.points : 0;
     res.status(200).json({
       success: true,
       customer: {
         ...customer,
-        vendorPoints: balance ? balance.points : 0,
-        sharedPoints: shared ? shared.points : 0
-      }
+        vendorPoints,
+        vendorPointsValue: Math.round(vendorPoints * pointRedemptionValue * 100) / 100,
+        sharedPoints,
+        sharedPointsValue: Math.round(sharedPoints * pointRedemptionValue * 100) / 100
+      },
+      pointRedemptionValue
     });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
@@ -258,7 +265,10 @@ router.post('/api/vendor/redeem', vendor_verify, (req, res) => {
         VALUES (?, ?, 'redeemed', ?, NULL, ?, ?)
       `).run(customer.id, vendorId, pts, decoded.id, now);
     }
-    res.status(200).json({ success: true, redeemed: pts });
+    const redemptionSetting = db.prepare("SELECT value FROM settings WHERE key = 'point_redemption_value'").get();
+    const pointRedemptionValue = redemptionSetting ? parseFloat(redemptionSetting.value) : 0.10;
+    const dollarSavings = Math.round(pts * pointRedemptionValue * 100) / 100;
+    res.status(200).json({ success: true, redeemed: pts, dollarSavings });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }

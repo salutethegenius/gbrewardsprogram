@@ -128,6 +128,7 @@ db.exec(`
 `);
 const setDefault = db.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
 setDefault.run('shared_rewards_pct', '20');
+setDefault.run('point_redemption_value', '0.10');
 
 // Seed default store and first admin if none exist
 const bcrypt = require('bcrypt');
