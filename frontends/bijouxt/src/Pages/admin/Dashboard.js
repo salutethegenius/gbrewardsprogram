@@ -11,7 +11,7 @@ import Footer from '../../components/Footer';
 
 const AdminDashboard = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    document.querySelector('title').innerHTML = title;
+    document.querySelector('title').textContent = title;
   }
 
   const [open, setOpen] = useState(false);
@@ -27,10 +27,10 @@ const AdminDashboard = ({ title }) => {
       navigate('/admin/login');
       return;
     }
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/dashboard?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/dashboard`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setStats(res.stats);
-    }, null);
+    }, null, token);
   }, [navigate, token]);
 
   const handleLogout = () => {

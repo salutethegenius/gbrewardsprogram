@@ -12,7 +12,7 @@ import Footer from '../../components/Footer';
 
 const CustomerDashboard = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    document.querySelector('title').innerHTML = title;
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
   }
 
   const [open, setOpen] = useState(false);
@@ -34,16 +34,16 @@ const CustomerDashboard = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/customer/balances?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/customer/balances`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setVendorBalances(res.vendorBalances || []);
       setSharedPoints(res.sharedPoints ?? 0);
       setSharedPointsValue(res.sharedPointsValue ?? 0);
       setPointRedemptionValue(res.pointRedemptionValue ?? 0.1);
-    }, null);
+    }, null, token);
     setTxLoading(true);
-    const txUrl = `${process.env.REACT_APP_SERVER || '/'}api/customer/transactions?token=${token}&limit=50`;
-    requests.makeGet(txUrl, setOpen, setSeverity, setToastMsg, setTxLoading, (res) => setTransactions(res.data || []), null);
+    const txUrl = `${process.env.REACT_APP_SERVER || '/'}api/customer/transactions?limit=50`;
+    requests.makeGet(txUrl, setOpen, setSeverity, setToastMsg, setTxLoading, (res) => setTransactions(res.data || []), null, token);
   }, [navigate, token]);
 
   const handleLogout = () => {

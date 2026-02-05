@@ -12,7 +12,7 @@ import Footer from '../../components/Footer';
 
 const AdminSettings = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    document.querySelector('title').innerHTML = title;
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
   }
 
   const [open, setOpen] = useState(false);
@@ -31,16 +31,16 @@ const AdminSettings = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/settings?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/settings`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setSettings(res.settings || {});
       setSharedPct(parseFloat(res.settings?.shared_rewards_pct) || 20);
-    }, null);
+    }, null, token);
   }, [navigate, token]);
 
   const handleSave = () => {
     setSaving(true);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/settings?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/settings`;
     requests.makePut(
       url,
       { shared_rewards_pct: Math.max(0, Math.min(100, sharedPct)) },
@@ -49,7 +49,8 @@ const AdminSettings = ({ title }) => {
       setToastMsg,
       setSaving,
       () => {},
-      'Settings saved'
+      'Settings saved',
+      token
     );
   };
 

@@ -2,7 +2,10 @@ const setCookies = (name, value, expires) => {
     const d = new Date();
     d.setTime(d.getTime() + (expires*24*60*60*1000));
     let exDay = "expires="+ d.toUTCString();
-    document.cookie = name + "=" + value + ";" + exDay + ";path=/";
+    const isSecure = typeof window !== 'undefined' && window.location?.protocol === 'https:';
+    let cookie = name + "=" + value + ";" + exDay + ";path=/;SameSite=Strict";
+    if (isSecure) cookie += ";Secure";
+    document.cookie = cookie;
 }
 
 const getCookies = (name) => {
@@ -22,9 +25,9 @@ const getCookies = (name) => {
 }
 
 const deleteCookies = (name) => {
-    if( getCookies(name) ) {
-        document.cookie = name + "=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT";
-      }
+    if (getCookies(name)) {
+        document.cookie = name + "=;path=/;expires=Thu, 01 Jan 1970 00:00:01 GMT;SameSite=Strict";
+    }
 }
 
 const cookies = {setCookies, getCookies, deleteCookies}

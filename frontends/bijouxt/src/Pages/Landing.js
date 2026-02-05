@@ -26,7 +26,7 @@ const Section = ({ id, children, background = 'white' }) => (
 
 const Landing = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    document.querySelector('title').innerHTML = title;
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
   }
 
   const heroVideoSrc = '/assets/gbpa-hero.mp4';

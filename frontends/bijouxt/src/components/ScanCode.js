@@ -23,14 +23,15 @@ const ScanCode = ({ setOpen, setSeverity, setToastMsg, setLoading, setOpenScanne
     const [rLoading, setRLoading] = useState(true)
 
     const handleBarcode = (code) => {
-        const url = `${process.env.REACT_APP_SERVER}api/admin/user?token=${token}&sid=${Company.store_id}&uid=${code}`
+        const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/user?sid=${Company.store_id}&uid=${code}`
 
         requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading,
             (res) => {
                 setUser(res.user)
                 setIsLoading(false)
             },
-            null
+            null,
+            token
         )
 
     }
@@ -40,14 +41,15 @@ const ScanCode = ({ setOpen, setSeverity, setToastMsg, setLoading, setOpenScanne
             setALoading(true)
             let points = parseFloat(amount) * Company.points_per_amount
 
-            const url = `${process.env.REACT_APP_SERVER}api/admin/user/points?token=${token}&sid=${Company.store_id}&uid=${user.id}`
+            const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/user/points?sid=${Company.store_id}&uid=${user.id}`
 
             requests.makePost(url, { points: points, user_points: (user.points + points), amount: parseFloat(amount) }, setOpen, setSeverity, setToastMsg, setALoading,
                 (res) => {
                     loadData()
                     setOpenScanner(false)
                 },
-                "User points added successfully"
+                "User points added successfully",
+                token
             )
         } else {
             setToastMsg('Invalid amount')
@@ -60,14 +62,15 @@ const ScanCode = ({ setOpen, setSeverity, setToastMsg, setLoading, setOpenScanne
         if (window.confirm("You are about to redeem " + user.fullname + "'s points?")) {
             if (user.points > 0) {
                 setRLoading(true)
-                const url = `${process.env.REACT_APP_SERVER}api/admin/user/redeem?token=${token}&sid=${Company.store_id}&uid=${barcode}`
+                const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/user/redeem?sid=${Company.store_id}&uid=${barcode}`
 
                 requests.makeGet(url, setOpen, setSeverity, setToastMsg, setRLoading,
                     (res) => {
                         loadData()
                         setOpenScanner(false)
                     },
-                    "User points redeemed"
+                    "User points redeemed",
+                    token
                 )
             }else {
                 setToastMsg("User has insufficient points")

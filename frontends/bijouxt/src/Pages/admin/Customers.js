@@ -9,7 +9,7 @@ import Footer from '../../components/Footer';
 
 const AdminCustomers = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    document.querySelector('title').innerHTML = title;
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
   }
 
   const [open, setOpen] = useState(false);
@@ -26,8 +26,8 @@ const AdminCustomers = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/customers?token=${token}`;
-    requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setCustomers(res.data || []), null);
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/customers`;
+    requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setCustomers(res.data || []), null, token);
   }, [navigate, token]);
 
   return (

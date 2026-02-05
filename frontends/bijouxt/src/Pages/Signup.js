@@ -16,7 +16,7 @@ import { useDispatch } from "react-redux";
 import { updateuser } from "../features/users";
 
 const Signup = ({ title }) => {
-    document.querySelector('title').innerHTML = title
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
 
     const { email } = useParams()
 
@@ -72,8 +72,7 @@ const Signup = ({ title }) => {
         for (let i in data)
             objs[Object.keys(data[i]).toString()] = Object.values(data[i]).toString()
 
-        console.log(objs)
-        const url = `${process.env.REACT_APP_SERVER}api/signup?api_token=${process.env.REACT_APP_API_TOKEN}&sid=${Company.store_id}`
+        const url = `${process.env.REACT_APP_SERVER || '/'}api/signup?api_token=${process.env.REACT_APP_API_TOKEN}&sid=${Company.store_id}`
         requests.makePost(url, { ...objs, email: email }, setOpen, setSeverity, setToastMsg, setLoading,
             (res) => {
                 cookies.setCookies('user', JSON.stringify(res.user), 5)

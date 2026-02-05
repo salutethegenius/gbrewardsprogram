@@ -14,7 +14,7 @@ import Company from "../utilities/Company";
 import Grid from "../components/Grid";
 
 const Login = ({ title }) => {
-    document.querySelector('title').innerHTML = title
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
 
     const [loading, setLoading] = useState(false)
 

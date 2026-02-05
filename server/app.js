@@ -5,14 +5,26 @@ const dotenv = require('dotenv');
 // Load env BEFORE importing anything that needs it
 dotenv.config();
 
+// Validate required environment variables at startup
+const required = ['TOKEN', 'ADMIN_TOKEN', 'VENDOR_TOKEN', 'SUPABASE_URL', 'SUPABASE_SERVICE_KEY'];
+if (process.env.NODE_ENV === 'production') {
+  required.push('FRONTEND_URL');
+}
+const missing = required.filter((key) => !process.env[key] || process.env[key].trim() === '');
+if (missing.length > 0) {
+  console.error('Missing required environment variables:', missing.join(', '));
+  console.error('Set them in .env or the environment. See server/.env.example.');
+  process.exit(1);
+}
+
 const cookieParser = require('cookie-parser');
 const enforce = require('express-sslify');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-// Load DB (creates tables + seed admin)
-require('./database/config');
+// Load DB client and seed helper
+const { seedAsync } = require('./database/config');
 
 // Rate limiter for auth endpoints (prevent brute force)
 const authLimiter = rateLimit({
@@ -28,6 +40,15 @@ const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per minute
   message: { success: false, msg: 'Too many requests. Please slow down.' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Stricter limit for sensitive operations (points award/redeem, admin actions)
+const sensitiveLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: { success: false, msg: 'Too many requests. Please try again later.' },
   standardHeaders: true,
   legacyHeaders: false
 });
@@ -54,8 +75,9 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
+const frontendOrigin = process.env.FRONTEND_URL;
 app.use(cors({
-  origin: process.env.FRONTEND_URL || true,
+  origin: frontendOrigin ? [frontendOrigin] : false,
   credentials: true
 }));
 app.use(express.static('public'));
@@ -71,6 +93,11 @@ app.use('/api/admin/signin', authLimiter);
 app.use('/api/vendor/signin', authLimiter);
 app.use('/api/vendor/signup', authLimiter);
 app.use('/api/customer/login', authLimiter);
+
+// Stricter rate limit on sensitive endpoints
+app.use('/api/vendor/award', sensitiveLimiter);
+app.use('/api/vendor/redeem', sensitiveLimiter);
+app.use('/api/admin', sensitiveLimiter);
 
 app.use((_, res, next) => {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -88,9 +115,21 @@ app.use(routes);
 app.use(vendor_routes);
 app.use(customer_routes);
 
+// Health check for deployment/monitoring
+app.get('/api/health', (_, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 // SPA fallback: serve frontend for non-API routes (after static and API)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => console.log(`listening on port ${PORT}`));
+seedAsync()
+  .then(() => {
+    app.listen(PORT, () => console.log(`listening on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error('Database seed failed:', err);
+    process.exit(1);
+  });

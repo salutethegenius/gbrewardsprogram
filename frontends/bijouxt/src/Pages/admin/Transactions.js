@@ -9,7 +9,7 @@ import Footer from '../../components/Footer';
 
 const AdminTransactions = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    document.querySelector('title').innerHTML = title;
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
   }
 
   const [open, setOpen] = useState(false);
@@ -26,8 +26,8 @@ const AdminTransactions = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/transactions?token=${token}&limit=100`;
-    requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setData(res.data || []), null);
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/transactions?limit=100`;
+    requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setData(res.data || []), null, token);
   }, [navigate, token]);
 
   const typeLabel = (t) => {

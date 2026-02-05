@@ -13,7 +13,7 @@ import Company from '../../utilities/Company';
 
 const AdminLogin = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    document.querySelector('title').innerHTML = title;
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
   }
 
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,6 @@ const AdminLogin = ({ title }) => {
       setLoading(true);
       const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/signin`;
       // #region agent log
-      console.log('[DEBUG] Admin login URL:', url, '| REACT_APP_SERVER:', process.env.REACT_APP_SERVER);
       // #endregion
       requests.makePost(
         url,

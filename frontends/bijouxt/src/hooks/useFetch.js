@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const useFetch = (url) => {
+const useFetch = (url, token) => {
 
     const [data, setData] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -8,9 +8,12 @@ const useFetch = (url) => {
 
     useEffect(() => {
         const abortCont = new AbortController();
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
 
         fetch(url, {
-            signal: abortCont.signal
+            signal: abortCont.signal,
+            headers
         })
         .then(res => res.json())
         .then(res => {
@@ -24,18 +27,17 @@ const useFetch = (url) => {
                 setIsLoading(false)
             }
         }).catch(err => {
-            if(err === 'AbortError') {
-                console.log('Fetch terminated');
-            }else {
-                console.log("Error message: ", err.message);
+            if (err.name === 'AbortError') {
+                // Fetch aborted, ignore
+            } else {
                 setData(null);
                 setIsLoading(false);
-                setError('GASERR_: error with fetch');
+                setError('An error occurred');
             }
         })
 
         return () => abortCont.abort();
-    }, [url])
+    }, [url, token])
     return {data, error, isLoading};
 }
  

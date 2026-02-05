@@ -11,7 +11,7 @@ import Company from '../../utilities/Company';
 
 const CustomerLogin = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    document.querySelector('title').innerHTML = title;
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
   }
 
   const [loading, setLoading] = useState(false);

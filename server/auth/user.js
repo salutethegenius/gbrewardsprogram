@@ -3,7 +3,7 @@ const joi = require('joi');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
-const db = require('../database/config');
+const { supabase } = require('../database/config');
 
 const signinSchema = joi.object({
   email: joi.string().min(5).required().email(),
@@ -20,90 +20,90 @@ const signupSchema = joi.object({
   store_id: joi.string().optional()
 });
 
-function getDefaultStoreId() {
-  const row = db.prepare('SELECT id FROM stores LIMIT 1').get();
-  return row ? row.id : null;
+async function getDefaultStoreId() {
+  const { data: rows } = await supabase.from('stores').select('id').limit(1);
+  return rows && rows.length > 0 ? rows[0].id : null;
 }
 
-router.post('/api/user/signin', (req, res) => {
+router.post('/api/user/signin', async (req, res) => {
   try {
-    signinSchema.validateAsync(req.body)
-      .then((val) => {
-        const storeId = val.store_id || getDefaultStoreId();
-        if (!storeId) {
-          res.status(500).json({ success: false, msg: 'No store configured' });
-          return;
-        }
-        const row = db.prepare('SELECT * FROM users WHERE email = ? AND store_id = ?').get(val.email, storeId);
-        if (!row) {
-          res.status(401).json({ success: false, error: 'Invalid Email', msg: 'No user record found' });
-          return;
-        }
-        bcrypt.compare(val.password, row.password, (err, result) => {
-          if (err) {
-            res.status(500).json({ success: false, error: err, msg: 'Server error' });
-            return;
-          }
-          if (!result) {
-            res.status(401).json({ success: false, error: 'Password Mismatch', msg: 'Invalid password' });
-            return;
-          }
-          const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.TOKEN || 'user-secret', { expiresIn: '7d' });
-          const user = {
-            id: row.id,
-            store_id: row.store_id,
-            email: row.email,
-            fullname: row.fullname,
-            phone: row.phone,
-            points: row.points
-          };
-          res.status(200).json({ success: true, user, token });
-        });
-      })
-      .catch((err) => {
-        res.status(401).json({ success: false, error: err, msg: 'Invalid request data' });
-      });
+    const val = await signinSchema.validateAsync(req.body);
+    const storeId = val.store_id || await getDefaultStoreId();
+    if (!storeId) {
+      res.status(500).json({ success: false, msg: 'No store configured' });
+      return;
+    }
+    const { data: rows, error } = await supabase.from('users').select('*').eq('email', val.email).eq('store_id', storeId).limit(1);
+    if (error || !rows || rows.length === 0) {
+      res.status(401).json({ success: false, error: 'Invalid Email', msg: 'No user record found' });
+      return;
+    }
+    const row = rows[0];
+    const result = await bcrypt.compare(val.password, row.password);
+    if (!result) {
+      res.status(401).json({ success: false, error: 'Password Mismatch', msg: 'Invalid password' });
+      return;
+    }
+    if (!process.env.TOKEN) {
+      res.status(503).json({ success: false, msg: 'Server configuration error' });
+      return;
+    }
+    const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.TOKEN, { expiresIn: '7d' });
+    const user = { id: row.id, store_id: row.store_id, email: row.email, fullname: row.fullname, phone: row.phone, points: row.points };
+    res.status(200).json({ success: true, user, token });
   } catch (err) {
+    if (err.isJoi) {
+      res.status(401).json({ success: false, error: err, msg: 'Invalid request data' });
+      return;
+    }
     res.status(500).json({ success: false, error: err, msg: 'Server error' });
   }
 });
 
-router.post('/api/user/signup', (req, res) => {
+router.post('/api/user/signup', async (req, res) => {
   try {
-    signupSchema.validateAsync(req.body)
-      .then((val) => {
-        const storeId = val.store_id || getDefaultStoreId();
-        if (!storeId) {
-          res.status(500).json({ success: false, msg: 'No store configured' });
-          return;
-        }
-        const existing = db.prepare('SELECT id FROM users WHERE email = ? AND store_id = ?').get(val.email, storeId);
-        if (existing) {
-          res.status(401).json({ success: false, msg: 'Email already registered for this store' });
-          return;
-        }
-        const id = uuidv4();
-        const hash = bcrypt.hashSync(val.password, 10);
-        db.prepare(`
-          INSERT INTO users (id, store_id, email, password, fullname, phone, country_code, points, timestamp)
-          VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)
-        `).run(id, storeId, val.email, hash, val.fullname || '', val.phone || '', val.country_code || '', Date.now());
-        const row = db.prepare('SELECT id, store_id, email, fullname, phone, points FROM users WHERE id = ?').get(id);
-        const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.TOKEN || 'user-secret', { expiresIn: '7d' });
-        const user = {
-          id: row.id,
-          store_id: row.store_id,
-          email: row.email,
-          fullname: row.fullname,
-          phone: row.phone,
-          points: row.points
-        };
-        res.status(200).json({ success: true, user, token });
-      })
-      .catch((err) => {
-        res.status(401).json({ success: false, error: err, msg: 'Invalid request data' });
-      });
+    const val = await signupSchema.validateAsync(req.body);
+    const storeId = val.store_id || await getDefaultStoreId();
+    if (!storeId) {
+      res.status(500).json({ success: false, msg: 'No store configured' });
+      return;
+    }
+    const { data: existing } = await supabase.from('users').select('id').eq('email', val.email).eq('store_id', storeId).limit(1);
+    if (existing && existing.length > 0) {
+      res.status(401).json({ success: false, msg: 'Email already registered for this store' });
+      return;
+    }
+    const id = uuidv4();
+    const hash = bcrypt.hashSync(val.password, 10);
+    const { error: insertErr } = await supabase.from('users').insert({
+      id,
+      store_id: storeId,
+      email: val.email,
+      password: hash,
+      fullname: val.fullname || '',
+      phone: val.phone || '',
+      country_code: val.country_code || '',
+      points: 0,
+      timestamp: Date.now()
+    });
+    if (insertErr) {
+      res.status(500).json({ success: false, error: insertErr, msg: 'Server error' });
+      return;
+    }
+    const { data: rowData } = await supabase.from('users').select('id, store_id, email, fullname, phone, points').eq('id', id).single();
+    const row = rowData;
+    if (!process.env.TOKEN) {
+      res.status(503).json({ success: false, msg: 'Server configuration error' });
+      return;
+    }
+    const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.TOKEN, { expiresIn: '7d' });
+    const user = { id: row.id, store_id: row.store_id, email: row.email, fullname: row.fullname, phone: row.phone, points: row.points };
+    res.status(200).json({ success: true, user, token });
   } catch (err) {
+    if (err.isJoi) {
+      res.status(401).json({ success: false, error: err, msg: 'Invalid request data' });
+      return;
+    }
     res.status(500).json({ success: false, error: err, msg: 'Server error' });
   }
 });

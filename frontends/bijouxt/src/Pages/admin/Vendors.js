@@ -12,7 +12,7 @@ import Footer from '../../components/Footer';
 
 const AdminVendors = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    document.querySelector('title').innerHTML = title;
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
   }
 
   const [open, setOpen] = useState(false);
@@ -33,13 +33,13 @@ const AdminVendors = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/vendors?token=${token}`;
-    requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setVendors(res.data || []), null);
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/vendors`;
+    requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setVendors(res.data || []), null, token);
   };
 
   const handleApprove = (id) => {
     setApprovingId(id);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/vendors/${id}?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/vendors/${id}`;
     requests.makePut(
       url,
       { is_active: 1 },
@@ -48,7 +48,8 @@ const AdminVendors = ({ title }) => {
       setToastMsg,
       (v) => { if (v === false) setApprovingId(null); },
       () => load(),
-      'Vendor approved'
+      'Vendor approved',
+      token
     );
   };
 
@@ -67,7 +68,7 @@ const AdminVendors = ({ title }) => {
       return;
     }
     setSubmitting(true);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/vendors?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/vendors`;
     requests.makePost(
       url,
       {
@@ -90,7 +91,8 @@ const AdminVendors = ({ title }) => {
         setShowForm(false);
         load();
       },
-      'Vendor created'
+      'Vendor created',
+      token
     );
   };
 

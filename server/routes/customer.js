@@ -1,26 +1,24 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
-const db = require('../database/config');
-const { verify } = require('../auth/verify');
+const { supabase } = require('../database/config');
+const { verify, getTokenFromRequest } = require('../auth/verify');
 
-// Customer balances: per-vendor points + shared pool
-router.get('/api/customer/balances', verify, (req, res) => {
+router.get('/api/customer/balances', verify, async (req, res) => {
   try {
-    const token = req.query.token;
-    const decoded = jwt.verify(token, process.env.TOKEN || 'user-secret');
+    const token = getTokenFromRequest(req);
+    const decoded = jwt.verify(token, process.env.TOKEN);
     const customerId = decoded.id;
-    const balances = db.prepare(`
-      SELECT b.vendor_id, b.points, v.name as vendor_name
-      FROM balances b
-      JOIN vendors v ON v.id = b.vendor_id AND v.is_active = 1
-      WHERE b.customer_id = ? AND b.points > 0
-      ORDER BY b.points DESC
-    `).all(customerId);
-    const shared = db.prepare('SELECT points FROM shared_pool WHERE customer_id = ?').get(customerId);
-    const redemptionSetting = db.prepare("SELECT value FROM settings WHERE key = 'point_redemption_value'").get();
-    const pointRedemptionValue = redemptionSetting ? parseFloat(redemptionSetting.value) : 0.10;
-    const sharedPts = shared ? shared.points : 0;
-    const vendorBalancesWithValue = balances.map((b) => ({
+    const { data: balanceRows } = await supabase.from('balances').select('vendor_id, points').eq('customer_id', customerId).gt('points', 0).order('points', { ascending: false });
+    const vendorBalancesWithName = await Promise.all((balanceRows || []).map(async (b) => {
+      const { data: v } = await supabase.from('vendors').select('name').eq('id', b.vendor_id).eq('is_active', true).single();
+      return v ? { ...b, vendor_name: v.name } : null;
+    }));
+    const vendorBalances = (vendorBalancesWithName || []).filter(Boolean);
+    const { data: sharedRow } = await supabase.from('shared_pool').select('points').eq('customer_id', customerId).single();
+    const { data: redemptionRow } = await supabase.from('settings').select('value').eq('key', 'point_redemption_value').single();
+    const pointRedemptionValue = redemptionRow ? parseFloat(redemptionRow.value) : 0.10;
+    const sharedPts = sharedRow ? sharedRow.points : 0;
+    const vendorBalancesWithValue = vendorBalances.map((b) => ({
       ...b,
       pointsValue: Math.round((b.points || 0) * pointRedemptionValue * 100) / 100
     }));
@@ -36,32 +34,29 @@ router.get('/api/customer/balances', verify, (req, res) => {
   }
 });
 
-// Customer transaction history
-router.get('/api/customer/transactions', verify, (req, res) => {
+router.get('/api/customer/transactions', verify, async (req, res) => {
   try {
-    const token = req.query.token;
-    const decoded = jwt.verify(token, process.env.TOKEN || 'user-secret');
+    const token = getTokenFromRequest(req);
+    const decoded = jwt.verify(token, process.env.TOKEN);
     const customerId = decoded.id;
     const limit = Math.min(parseInt(req.query.limit) || 50, 200);
     const offset = parseInt(req.query.offset) || 0;
-    const rows = db.prepare(`
-      SELECT t.id, t.type, t.points, t.amount, t.timestamp, v.name as vendor_name
-      FROM transactions t
-      LEFT JOIN vendors v ON v.id = t.vendor_id
-      WHERE t.customer_id = ? ORDER BY t.timestamp DESC LIMIT ? OFFSET ?
-    `).all(customerId, limit, offset);
-    res.status(200).json({ success: true, data: rows });
+    const { data: rows } = await supabase.from('transactions').select('id, type, points, amount, timestamp, vendor_id').eq('customer_id', customerId).order('timestamp', { ascending: false }).range(offset, offset + limit - 1);
+    const withVendor = await Promise.all((rows || []).map(async (t) => {
+      const { data: v } = await supabase.from('vendors').select('name').eq('id', t.vendor_id).single();
+      return { ...t, vendor_name: v?.name };
+    }));
+    res.status(200).json({ success: true, data: withVendor });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Get customer profile
-router.get('/api/customer/me', verify, (req, res) => {
+router.get('/api/customer/me', verify, async (req, res) => {
   try {
-    const token = req.query.token;
-    const decoded = jwt.verify(token, process.env.TOKEN || 'user-secret');
-    const customer = db.prepare('SELECT id, phone, fullname, email, created_at FROM customers WHERE id = ?').get(decoded.id);
+    const token = getTokenFromRequest(req);
+    const decoded = jwt.verify(token, process.env.TOKEN);
+    const { data: customer } = await supabase.from('customers').select('id, phone, fullname, email, created_at').eq('id', decoded.id).single();
     if (!customer) {
       res.status(404).json({ success: false, msg: 'Customer not found' });
       return;

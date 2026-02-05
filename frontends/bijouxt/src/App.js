@@ -2,6 +2,7 @@ import { createTheme } from '@mui/material';
 import { ThemeProvider } from '@emotion/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Company from './utilities/Company';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import Landing from './Pages/Landing';
 import Join from './Pages/Join';
@@ -39,9 +40,10 @@ function App() {
   });
 
   return (
-    <ThemeProvider theme={theme}>
-      <Router>
-        <Routes>
+    <ErrorBoundary>
+      <ThemeProvider theme={theme}>
+        <Router>
+          <Routes>
           <Route path="/" element={<Landing title={`${Company.name} | ${Company.tagline}`} />} />
           <Route path="/join" element={<Join title={`Join rewards | ${Company.name}`} />} />
           <Route path="/customer/login" element={<CustomerLogin title={`Customer | ${Company.name}`} />} />
@@ -58,9 +60,10 @@ function App() {
           <Route path="/admin/transactions" element={<AdminTransactions title={`Transactions | ${Company.name}`} />} />
           <Route path="/admin/settings" element={<AdminSettings title={`Settings | ${Company.name}`} />} />
           <Route path="*" element={<Landing title={`${Company.name} | ${Company.tagline}`} />} />
-        </Routes>
-      </Router>
-    </ThemeProvider>
+          </Routes>
+        </Router>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

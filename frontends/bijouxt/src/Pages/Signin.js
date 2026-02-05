@@ -16,7 +16,7 @@ import { updateuser } from "../features/users";
 import { RemoveRedEye, VisibilityOff } from "@mui/icons-material";
 
 const Signin = ({ title }) => {
-    document.querySelector('title').innerHTML = title
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
 
     const { email } = useParams()
 

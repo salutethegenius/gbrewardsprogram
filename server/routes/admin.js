@@ -2,9 +2,8 @@ const router = require('express').Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
-const db = require('../database/config');
+const { supabase } = require('../database/config');
 const { admin_verify } = require('../auth/verify');
-
 const joi = require('joi');
 
 const vendorSchema = joi.object({
@@ -16,20 +15,20 @@ const vendorSchema = joi.object({
   points_per_dollar: joi.number().min(0).default(1)
 });
 
-// Dashboard stats
-router.get('/api/admin/dashboard', admin_verify, (req, res) => {
+router.get('/api/admin/dashboard', admin_verify, async (req, res) => {
   try {
-    const vendorCount = db.prepare('SELECT COUNT(*) as c FROM vendors WHERE is_active = 1').get().c;
-    const customerCount = db.prepare('SELECT COUNT(*) as c FROM customers').get().c;
+    const { count: vendorCount } = await supabase.from('vendors').select('*', { count: 'exact', head: true }).eq('is_active', true);
+    const { count: customerCount } = await supabase.from('customers').select('*', { count: 'exact', head: true });
     const todayStart = new Date().setHours(0, 0, 0, 0);
-    const txToday = db.prepare('SELECT COUNT(*) as c, COALESCE(SUM(points), 0) as total FROM transactions WHERE timestamp >= ? AND type IN (\'earned\', \'shared_earned\')').get(todayStart);
+    const { data: txRows } = await supabase.from('transactions').select('points').gte('timestamp', todayStart).in('type', ['earned', 'shared_earned']);
+    const txTotal = (txRows || []).reduce((sum, r) => sum + (r.points || 0), 0);
     res.status(200).json({
       success: true,
       stats: {
-        vendors: vendorCount,
-        customers: customerCount,
-        transactionsToday: txToday.c,
-        pointsAwardedToday: txToday.total || 0
+        vendors: vendorCount || 0,
+        customers: customerCount || 0,
+        transactionsToday: (txRows || []).length,
+        pointsAwardedToday: txTotal
       }
     });
   } catch (e) {
@@ -37,46 +36,53 @@ router.get('/api/admin/dashboard', admin_verify, (req, res) => {
   }
 });
 
-// List vendors
-router.get('/api/admin/vendors', admin_verify, (req, res) => {
+router.get('/api/admin/vendors', admin_verify, async (req, res) => {
   try {
-    const vendors = db.prepare('SELECT id, name, email, phone, address, points_per_dollar, is_active, created_at FROM vendors ORDER BY name').all();
-    res.status(200).json({ success: true, data: vendors });
+    const { data: vendors, error } = await supabase.from('vendors').select('id, name, email, phone, address, points_per_dollar, is_active, created_at').order('name');
+    if (error) throw error;
+    res.status(200).json({ success: true, data: vendors || [] });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Create vendor
-router.post('/api/admin/vendors', admin_verify, (req, res) => {
+router.post('/api/admin/vendors', admin_verify, async (req, res) => {
   try {
-    vendorSchema.validateAsync(req.body)
-      .then((val) => {
-        const existing = db.prepare('SELECT id FROM vendors WHERE email = ?').get(val.email);
-        if (existing) {
-          res.status(401).json({ success: false, msg: 'Email already registered' });
-          return;
-        }
-        const id = uuidv4();
-        const hash = bcrypt.hashSync(val.password, 10);
-        db.prepare(`
-          INSERT INTO vendors (id, name, email, password, phone, address, points_per_dollar, is_active, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
-        `).run(id, val.name, val.email, hash, val.phone || '', val.address || '', val.points_per_dollar || 1, Date.now());
-        const vendor = db.prepare('SELECT id, name, email, phone, address, points_per_dollar, is_active, created_at FROM vendors WHERE id = ?').get(id);
-        res.status(200).json({ success: true, vendor });
-      })
-      .catch((err) => res.status(400).json({ success: false, error: err.message }));
+    const val = await vendorSchema.validateAsync(req.body);
+    const { data: existing } = await supabase.from('vendors').select('id').eq('email', val.email).limit(1);
+    if (existing && existing.length > 0) {
+      res.status(401).json({ success: false, msg: 'Email already registered' });
+      return;
+    }
+    const id = uuidv4();
+    const hash = bcrypt.hashSync(val.password, 10);
+    const { error: insertErr } = await supabase.from('vendors').insert({
+      id,
+      name: val.name,
+      email: val.email,
+      password: hash,
+      phone: val.phone || '',
+      address: val.address || '',
+      points_per_dollar: val.points_per_dollar || 1,
+      is_active: true,
+      created_at: Date.now()
+    });
+    if (insertErr) throw insertErr;
+    const { data: vendor } = await supabase.from('vendors').select('id, name, email, phone, address, points_per_dollar, is_active, created_at').eq('id', id).single();
+    res.status(200).json({ success: true, vendor });
   } catch (e) {
+    if (e.isJoi) {
+      res.status(400).json({ success: false, error: e.message });
+      return;
+    }
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Get vendor
-router.get('/api/admin/vendors/:id', admin_verify, (req, res) => {
+router.get('/api/admin/vendors/:id', admin_verify, async (req, res) => {
   try {
-    const vendor = db.prepare('SELECT id, name, email, phone, address, points_per_dollar, is_active, created_at FROM vendors WHERE id = ?').get(req.params.id);
-    if (!vendor) {
+    const { data: vendor, error } = await supabase.from('vendors').select('id, name, email, phone, address, points_per_dollar, is_active, created_at').eq('id', req.params.id).single();
+    if (error || !vendor) {
       res.status(404).json({ success: false, msg: 'Vendor not found' });
       return;
     }
@@ -86,81 +92,79 @@ router.get('/api/admin/vendors/:id', admin_verify, (req, res) => {
   }
 });
 
-// Update vendor
-router.put('/api/admin/vendors/:id', admin_verify, (req, res) => {
+router.put('/api/admin/vendors/:id', admin_verify, async (req, res) => {
   try {
     const { name, phone, address, points_per_dollar, is_active } = req.body;
     const id = req.params.id;
-    const existing = db.prepare('SELECT id FROM vendors WHERE id = ?').get(id);
+    const { data: existing } = await supabase.from('vendors').select('id').eq('id', id).single();
     if (!existing) {
       res.status(404).json({ success: false, msg: 'Vendor not found' });
       return;
     }
-    db.prepare(`
-      UPDATE vendors SET name = COALESCE(?, name), phone = COALESCE(?, phone), address = COALESCE(?, address),
-        points_per_dollar = COALESCE(?, points_per_dollar), is_active = COALESCE(?, is_active)
-      WHERE id = ?
-    `).run(name ?? undefined, phone ?? undefined, address ?? undefined, points_per_dollar ?? undefined, is_active ?? undefined, id);
-    const vendor = db.prepare('SELECT id, name, email, phone, address, points_per_dollar, is_active, created_at FROM vendors WHERE id = ?').get(id);
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (phone !== undefined) updates.phone = phone;
+    if (address !== undefined) updates.address = address;
+    if (points_per_dollar !== undefined) updates.points_per_dollar = points_per_dollar;
+    if (is_active !== undefined) updates.is_active = is_active;
+    await supabase.from('vendors').update(updates).eq('id', id);
+    const { data: vendor } = await supabase.from('vendors').select('id, name, email, phone, address, points_per_dollar, is_active, created_at').eq('id', id).single();
     res.status(200).json({ success: true, vendor });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// List customers
-router.get('/api/admin/customers', admin_verify, (req, res) => {
+router.get('/api/admin/customers', admin_verify, async (req, res) => {
   try {
-    const customers = db.prepare('SELECT id, phone, fullname, email, created_at FROM customers ORDER BY created_at DESC').all();
-    res.status(200).json({ success: true, data: customers });
+    const { data: customers, error } = await supabase.from('customers').select('id, phone, fullname, email, created_at').order('created_at', { ascending: false });
+    if (error) throw error;
+    res.status(200).json({ success: true, data: customers || [] });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// List all transactions
-router.get('/api/admin/transactions', admin_verify, (req, res) => {
+router.get('/api/admin/transactions', admin_verify, async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 100, 500);
     const offset = parseInt(req.query.offset) || 0;
-    const rows = db.prepare(`
-      SELECT t.id, t.customer_id, t.vendor_id, t.type, t.points, t.amount, t.processed_by, t.timestamp,
-        c.phone as customer_phone, c.fullname as customer_name,
-        v.name as vendor_name
-      FROM transactions t
-      LEFT JOIN customers c ON c.id = t.customer_id
-      LEFT JOIN vendors v ON v.id = t.vendor_id
-      ORDER BY t.timestamp DESC LIMIT ? OFFSET ?
-    `).all(limit, offset);
-    res.status(200).json({ success: true, data: rows });
+    const { data: plainRows, error } = await supabase.from('transactions').select('id, customer_id, vendor_id, type, points, amount, processed_by, timestamp').order('timestamp', { ascending: false }).range(offset, offset + limit - 1);
+    if (error) throw error;
+    const withNames = await Promise.all((plainRows || []).map(async (t) => {
+      const { data: c } = await supabase.from('customers').select('phone, fullname').eq('id', t.customer_id).single();
+      const { data: v } = await supabase.from('vendors').select('name').eq('id', t.vendor_id).single();
+      return { ...t, customer_phone: c?.phone, customer_name: c?.fullname, vendor_name: v?.name };
+    }));
+    res.status(200).json({ success: true, data: withNames });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Get settings
-router.get('/api/admin/settings', admin_verify, (req, res) => {
+router.get('/api/admin/settings', admin_verify, async (req, res) => {
   try {
-    const rows = db.prepare('SELECT key, value FROM settings').all();
+    const { data: rows, error } = await supabase.from('settings').select('key, value');
+    if (error) throw error;
     const settings = {};
-    rows.forEach(r => { settings[r.key] = r.value; });
+    (rows || []).forEach((r) => { settings[r.key] = r.value; });
     res.status(200).json({ success: true, settings });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Update settings
-router.put('/api/admin/settings', admin_verify, (req, res) => {
+router.put('/api/admin/settings', admin_verify, async (req, res) => {
   try {
     const { shared_rewards_pct } = req.body;
     if (shared_rewards_pct != null) {
       const pct = Math.max(0, Math.min(100, parseFloat(shared_rewards_pct)));
-      db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run('shared_rewards_pct', String(pct));
+      await supabase.from('settings').upsert({ key: 'shared_rewards_pct', value: String(pct) }, { onConflict: 'key' });
     }
-    const rows = db.prepare('SELECT key, value FROM settings').all();
+    const { data: rows, error } = await supabase.from('settings').select('key, value');
+    if (error) throw error;
     const settings = {};
-    rows.forEach(r => { settings[r.key] = r.value; });
+    (rows || []).forEach((r) => { settings[r.key] = r.value; });
     res.status(200).json({ success: true, settings });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });

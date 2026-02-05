@@ -1,8 +1,10 @@
-const makePost = (url, body, setOpen, setSeverity, setToastMsg, setLoading, action, successMsg) => {
+const makePost = (url, body, setOpen, setSeverity, setToastMsg, setLoading, action, successMsg, token) => {
+    const headers = { "Content-Type": "application/json", "Accept": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
     fetch(url, {
         mode: 'cors',
         method: 'POST',
-        headers: { "Content-Type": "application/json", "Accept": "application/json", "Origin": "http://localhost:3000" },
+        headers,
         body: JSON.stringify(body)
     }).then(res => {
         return res.json();
@@ -20,15 +22,13 @@ const makePost = (url, body, setOpen, setSeverity, setToastMsg, setLoading, acti
                 if (res.error === "Access Denied")
                     navigate('/')
 
-                console.log(res.error)
                 setToastMsg(res.msg)
                 setSeverity("error")
                 setOpen(true)
                 setLoading(false)
             }
         }).catch(err => {
-            console.log("An error occured: " + err.message)
-            setToastMsg("An error occured")
+            setToastMsg("An error occurred")
             setSeverity("error")
             setOpen(true)
             setLoading(false)
@@ -36,9 +36,12 @@ const makePost = (url, body, setOpen, setSeverity, setToastMsg, setLoading, acti
 }
 
 
-const makeGet = (url, setOpen, setSeverity, setToastMsg, setLoading, action, successMsg) => {
+const makeGet = (url, setOpen, setSeverity, setToastMsg, setLoading, action, successMsg, token) => {
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
     fetch(url, {
-        method: "GET"
+        method: "GET",
+        headers
     }).then(res => {
         return res.json();
     })
@@ -54,15 +57,13 @@ const makeGet = (url, setOpen, setSeverity, setToastMsg, setLoading, action, suc
             } else {
                 if (res.error === "Unauthorised request")
                     navigate('/')
-                console.log(res.error)
                 setToastMsg(res.msg)
                 setSeverity("error")
                 setOpen(true)
                 setLoading(false)
             }
         }).catch(err => {
-            console.log("An error occured: " + err.message)
-            setToastMsg("An error occured")
+            setToastMsg("An error occurred")
             setSeverity("error")
             setOpen(true)
             setLoading(false)
@@ -73,11 +74,13 @@ function navigate(url) {
   window.location.href = url;
 }
 
-const makePut = (url, body, setOpen, setSeverity, setToastMsg, setLoading, action, successMsg) => {
+const makePut = (url, body, setOpen, setSeverity, setToastMsg, setLoading, action, successMsg, token) => {
+  const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
   fetch(url, {
     mode: 'cors',
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    headers,
     body: JSON.stringify(body)
   })
     .then((res) => res.json())

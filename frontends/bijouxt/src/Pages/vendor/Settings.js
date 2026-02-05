@@ -12,7 +12,7 @@ import Footer from '../../components/Footer';
 
 const VendorSettings = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    document.querySelector('title').innerHTML = title;
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
   }
 
   const [open, setOpen] = useState(false);
@@ -31,7 +31,7 @@ const VendorSettings = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/settings?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/settings`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setVendor(res.vendor);
       setForm({
@@ -40,12 +40,12 @@ const VendorSettings = ({ title }) => {
         address: res.vendor?.address || '',
         points_per_dollar: res.vendor?.points_per_dollar ?? 1
       });
-    }, null);
+    }, null, token);
   }, [navigate, token]);
 
   const handleSave = () => {
     setSaving(true);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/settings?token=${token}`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/settings`;
     requests.makePut(
       url,
       { name: form.name, phone: form.phone, address: form.address, points_per_dollar: form.points_per_dollar },
@@ -58,7 +58,8 @@ const VendorSettings = ({ title }) => {
         setSeverity('success');
         setOpen(true);
       },
-      'Settings saved'
+      'Settings saved',
+      token
     );
   };
 

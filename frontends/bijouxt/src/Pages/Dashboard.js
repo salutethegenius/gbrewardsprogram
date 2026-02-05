@@ -20,7 +20,7 @@ import requests from "../handlers/requests";
 
 const Dashboard = ({ title }) => {
 
-    document.querySelector("title").innerHTML = title
+    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
@@ -52,7 +52,7 @@ const Dashboard = ({ title }) => {
 
 
 
-    const { data: history, error, isLoading } = useFetch(`${process.env.REACT_APP_SERVER}api/history?token=${token}&sid=${Company.store_id}`)
+    const { data: history, error, isLoading } = useFetch(`${process.env.REACT_APP_SERVER || '/'}api/history?sid=${Company.store_id}`, token)
 
     const openSidebar = (stateUpdate) => {
         stateUpdate(true)
@@ -79,7 +79,7 @@ const Dashboard = ({ title }) => {
     const reloadRef = useRef(null)
 
     const reload = () => {
-        const url = `${process.env.REACT_APP_SERVER}api/user?token=${token}&sid=${Company.store_id}`
+        const url = `${process.env.REACT_APP_SERVER || '/'}api/user?sid=${Company.store_id}`
         reloadRef.current.classList.add('rotate')
         setLoading(true)
 
@@ -89,7 +89,8 @@ const Dashboard = ({ title }) => {
                 dispatch(updateuser(res.user))
                 reloadRef.current.classList.remove('rotate')
             },
-            "Data updated"
+            "Data updated",
+            token
         )
     }
 

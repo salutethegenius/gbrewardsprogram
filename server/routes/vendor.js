@@ -1,14 +1,13 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
-const db = require('../database/config');
+const { supabase } = require('../database/config');
 const { v4: uuidv4 } = require('uuid');
-const { vendor_verify } = require('../auth/verify');
+const { vendor_verify, getTokenFromRequest } = require('../auth/verify');
 const { normalizePhoneForLookup } = require('../utilities/algorithmns');
 
-const VENDOR_SECRET = process.env.VENDOR_TOKEN || 'vendor-secret';
+const VENDOR_SECRET = process.env.VENDOR_TOKEN;
 
-// Public: add customer when they scan QR and submit (join page)
-router.post('/api/join', (req, res) => {
+router.post('/api/join', async (req, res) => {
   try {
     const { vendor_id, phone, fullname } = req.body || {};
     const phoneNorm = normalizePhoneForLookup((phone || '').toString().trim());
@@ -20,36 +19,33 @@ router.post('/api/join', (req, res) => {
       res.status(400).json({ success: false, msg: 'Vendor required' });
       return;
     }
-    const vendor = db.prepare('SELECT id FROM vendors WHERE id = ? AND is_active = 1').get(vendor_id);
+    const { data: vendor } = await supabase.from('vendors').select('id').eq('id', vendor_id).eq('is_active', true).single();
     if (!vendor) {
       res.status(404).json({ success: false, msg: 'Vendor not found' });
       return;
     }
-    let customer = db.prepare('SELECT id, phone, fullname FROM customers WHERE phone = ?').get(phoneNorm);
-    if (!customer) {
+    const { data: existingCust } = await supabase.from('customers').select('id, phone, fullname').eq('phone', phoneNorm).limit(1);
+    let customer;
+    if (existingCust && existingCust.length > 0) {
+      customer = existingCust[0];
+    } else {
       const custId = uuidv4();
-      db.prepare('INSERT INTO customers (id, phone, fullname, email, created_at) VALUES (?, ?, ?, ?, ?)').run(
-        custId, phoneNorm, (fullname || '').trim() || null, '', Date.now()
-      );
-      db.prepare('INSERT OR IGNORE INTO shared_pool (customer_id, points) VALUES (?, 0)').run(custId);
+      await supabase.from('customers').insert({ id: custId, phone: phoneNorm, fullname: (fullname || '').trim() || null, email: '', created_at: Date.now() });
+      await supabase.from('shared_pool').upsert({ customer_id: custId, points: 0 }, { onConflict: 'customer_id' });
       customer = { id: custId, phone: phoneNorm, fullname: (fullname || '').trim() || null };
     }
-    db.prepare(`
-      INSERT INTO balances (customer_id, vendor_id, points) VALUES (?, ?, 0)
-      ON CONFLICT(customer_id, vendor_id) DO NOTHING
-    `).run(customer.id, vendor_id);
+    await supabase.from('balances').upsert({ customer_id: customer.id, vendor_id, points: 0 }, { onConflict: 'customer_id,vendor_id' });
     res.status(200).json({ success: true, customer: { id: customer.id, phone: customer.phone, fullname: customer.fullname } });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Join URL for QR code (vendor shows QR; customer scans and gets this URL) (vendor shows QR; customer scans and gets this URL)
-router.get('/api/vendor/join-info', vendor_verify, (req, res) => {
+router.get('/api/vendor/join-info', vendor_verify, async (req, res) => {
   try {
-    const token = req.query.token;
+    const token = getTokenFromRequest(req);
     const decoded = jwt.verify(token, VENDOR_SECRET);
-    const vendor = db.prepare('SELECT id, name FROM vendors WHERE id = ? AND is_active = 1').get(decoded.id);
+    const { data: vendor } = await supabase.from('vendors').select('id, name').eq('id', decoded.id).eq('is_active', true).single();
     if (!vendor) {
       res.status(404).json({ success: false, msg: 'Vendor not found' });
       return;
@@ -62,10 +58,9 @@ router.get('/api/vendor/join-info', vendor_verify, (req, res) => {
   }
 });
 
-// Manual add customer (vendor dashboard)
-router.post('/api/vendor/customers', vendor_verify, (req, res) => {
+router.post('/api/vendor/customers', vendor_verify, async (req, res) => {
   try {
-    const token = req.query.token;
+    const token = getTokenFromRequest(req);
     const decoded = jwt.verify(token, VENDOR_SECRET);
     const vendorId = decoded.id;
     const { phone, fullname } = req.body || {};
@@ -74,49 +69,43 @@ router.post('/api/vendor/customers', vendor_verify, (req, res) => {
       res.status(400).json({ success: false, msg: 'Valid phone number required' });
       return;
     }
-    let customer = db.prepare('SELECT id, phone, fullname FROM customers WHERE phone = ?').get(phoneNorm);
-    if (!customer) {
+    const { data: existingCust } = await supabase.from('customers').select('id, phone, fullname').eq('phone', phoneNorm).limit(1);
+    let customer;
+    if (existingCust && existingCust.length > 0) {
+      customer = existingCust[0];
+    } else {
       const custId = uuidv4();
-      db.prepare('INSERT INTO customers (id, phone, fullname, email, created_at) VALUES (?, ?, ?, ?, ?)').run(
-        custId, phoneNorm, (fullname || '').trim() || null, '', Date.now()
-      );
-      db.prepare('INSERT OR IGNORE INTO shared_pool (customer_id, points) VALUES (?, 0)').run(custId);
+      await supabase.from('customers').insert({ id: custId, phone: phoneNorm, fullname: (fullname || '').trim() || null, email: '', created_at: Date.now() });
+      await supabase.from('shared_pool').upsert({ customer_id: custId, points: 0 }, { onConflict: 'customer_id' });
       customer = { id: custId, phone: phoneNorm, fullname: (fullname || '').trim() || null };
     }
-    db.prepare(`
-      INSERT INTO balances (customer_id, vendor_id, points) VALUES (?, ?, 0)
-      ON CONFLICT(customer_id, vendor_id) DO NOTHING
-    `).run(customer.id, vendorId);
+    await supabase.from('balances').upsert({ customer_id: customer.id, vendor_id: vendorId, points: 0 }, { onConflict: 'customer_id,vendor_id' });
     res.status(200).json({ success: true, customer: { id: customer.id, phone: customer.phone, fullname: customer.fullname } });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Dashboard stats for this vendor
-router.get('/api/vendor/dashboard', vendor_verify, (req, res) => {
+router.get('/api/vendor/dashboard', vendor_verify, async (req, res) => {
   try {
-    const token = req.query.token;
+    const token = getTokenFromRequest(req);
     const decoded = jwt.verify(token, VENDOR_SECRET);
     const vendorId = decoded.id;
     const todayStart = new Date().setHours(0, 0, 0, 0);
-    const txToday = db.prepare(`
-      SELECT COUNT(*) as c, COALESCE(SUM(points), 0) as total
-      FROM transactions WHERE vendor_id = ? AND timestamp >= ? AND type IN ('earned', 'shared_earned')
-    `).get(vendorId, todayStart);
-    const customerCount = db.prepare('SELECT COUNT(DISTINCT customer_id) as c FROM balances WHERE vendor_id = ?').get(vendorId).c;
-    const recentTx = db.prepare(`
-      SELECT t.id, t.type, t.points, t.amount, t.timestamp, c.phone, c.fullname
-      FROM transactions t
-      LEFT JOIN customers c ON c.id = t.customer_id
-      WHERE t.vendor_id = ? ORDER BY t.timestamp DESC LIMIT 20
-    `).all(vendorId);
+    const { data: txRows } = await supabase.from('transactions').select('points').eq('vendor_id', vendorId).gte('timestamp', todayStart).in('type', ['earned', 'shared_earned']);
+    const txTotal = (txRows || []).reduce((sum, r) => sum + (r.points || 0), 0);
+    const { count: customerCount } = await supabase.from('balances').select('*', { count: 'exact', head: true }).eq('vendor_id', vendorId);
+    const { data: recentTxRows } = await supabase.from('transactions').select('id, type, points, amount, timestamp, customer_id').eq('vendor_id', vendorId).order('timestamp', { ascending: false }).limit(20);
+    const recentTx = await Promise.all((recentTxRows || []).map(async (t) => {
+      const { data: c } = await supabase.from('customers').select('phone, fullname').eq('id', t.customer_id).single();
+      return { ...t, phone: c?.phone, fullname: c?.fullname };
+    }));
     res.status(200).json({
       success: true,
       stats: {
-        customers: customerCount,
-        transactionsToday: txToday.c,
-        pointsAwardedToday: txToday.total || 0
+        customers: customerCount || 0,
+        transactionsToday: (txRows || []).length,
+        pointsAwardedToday: txTotal
       },
       recentTransactions: recentTx
     });
@@ -125,28 +114,27 @@ router.get('/api/vendor/dashboard', vendor_verify, (req, res) => {
   }
 });
 
-// Look up customer by phone (for award/redeem UI)
-router.get('/api/vendor/customer', vendor_verify, (req, res) => {
+router.get('/api/vendor/customer', vendor_verify, async (req, res) => {
   try {
     const phone = normalizePhoneForLookup(req.query.phone || '');
     if (!phone) {
       res.status(400).json({ success: false, msg: 'Phone required' });
       return;
     }
-    const customer = db.prepare('SELECT id, phone, fullname, email FROM customers WHERE phone = ?').get(phone);
+    const { data: customer } = await supabase.from('customers').select('id, phone, fullname, email').eq('phone', phone).single();
     if (!customer) {
       res.status(200).json({ success: true, customer: null });
       return;
     }
-    const token = req.query.token;
+    const token = getTokenFromRequest(req);
     const decoded = jwt.verify(token, VENDOR_SECRET);
     const vendorId = decoded.id;
-    const balance = db.prepare('SELECT points FROM balances WHERE customer_id = ? AND vendor_id = ?').get(customer.id, vendorId);
-    const shared = db.prepare('SELECT points FROM shared_pool WHERE customer_id = ?').get(customer.id);
-    const redemptionSetting = db.prepare("SELECT value FROM settings WHERE key = 'point_redemption_value'").get();
-    const pointRedemptionValue = redemptionSetting ? parseFloat(redemptionSetting.value) : 0.10;
-    const vendorPoints = balance ? balance.points : 0;
-    const sharedPoints = shared ? shared.points : 0;
+    const { data: balanceRow } = await supabase.from('balances').select('points').eq('customer_id', customer.id).eq('vendor_id', vendorId).single();
+    const { data: sharedRow } = await supabase.from('shared_pool').select('points').eq('customer_id', customer.id).single();
+    const { data: redemptionRow } = await supabase.from('settings').select('value').eq('key', 'point_redemption_value').single();
+    const pointRedemptionValue = redemptionRow ? parseFloat(redemptionRow.value) : 0.10;
+    const vendorPoints = balanceRow ? balanceRow.points : 0;
+    const sharedPoints = sharedRow ? sharedRow.points : 0;
     res.status(200).json({
       success: true,
       customer: {
@@ -163,10 +151,9 @@ router.get('/api/vendor/customer', vendor_verify, (req, res) => {
   }
 });
 
-// Award points to customer (by phone and purchase amount). Applies shared rewards split.
-router.post('/api/vendor/award', vendor_verify, (req, res) => {
+router.post('/api/vendor/award', vendor_verify, async (req, res) => {
   try {
-    const token = req.query.token;
+    const token = getTokenFromRequest(req);
     const decoded = jwt.verify(token, VENDOR_SECRET);
     const vendorId = decoded.id;
     const { phone, amount } = req.body;
@@ -175,42 +162,39 @@ router.post('/api/vendor/award', vendor_verify, (req, res) => {
       res.status(400).json({ success: false, msg: 'Valid phone and amount required' });
       return;
     }
-    const vendor = db.prepare('SELECT id, points_per_dollar FROM vendors WHERE id = ? AND is_active = 1').get(vendorId);
+    const { data: vendor } = await supabase.from('vendors').select('id, points_per_dollar').eq('id', vendorId).eq('is_active', true).single();
     if (!vendor) {
       res.status(403).json({ success: false, msg: 'Vendor not found' });
       return;
     }
     const phoneNorm = normalizePhoneForLookup(phone);
-    let customer = db.prepare('SELECT id FROM customers WHERE phone = ?').get(phoneNorm);
-    if (!customer) {
+    let { data: custRows } = await supabase.from('customers').select('id').eq('phone', phoneNorm).limit(1);
+    let customerId;
+    if (custRows && custRows.length > 0) {
+      customerId = custRows[0].id;
+    } else {
       const custId = uuidv4();
-      db.prepare('INSERT INTO customers (id, phone, fullname, email, created_at) VALUES (?, ?, ?, ?, ?)').run(custId, phoneNorm, '', '', Date.now());
-      db.prepare('INSERT OR IGNORE INTO shared_pool (customer_id, points) VALUES (?, 0)').run(custId);
-      customer = { id: custId };
+      await supabase.from('customers').insert({ id: custId, phone: phoneNorm, fullname: '', email: '', created_at: Date.now() });
+      await supabase.from('shared_pool').upsert({ customer_id: custId, points: 0 }, { onConflict: 'customer_id' });
+      customerId = custId;
     }
-    const settings = db.prepare("SELECT value FROM settings WHERE key = 'shared_rewards_pct'").get();
-    const sharedPct = settings ? parseFloat(settings.value) : 20;
+    const { data: settingsRow } = await supabase.from('settings').select('value').eq('key', 'shared_rewards_pct').single();
+    const sharedPct = settingsRow ? parseFloat(settingsRow.value) : 20;
     const totalPoints = amt * vendor.points_per_dollar;
     const sharedPoints = totalPoints * (sharedPct / 100);
     const vendorPoints = totalPoints - sharedPoints;
-
     const now = Date.now();
-    db.prepare(`
-      INSERT INTO balances (customer_id, vendor_id, points) VALUES (?, ?, ?)
-      ON CONFLICT(customer_id, vendor_id) DO UPDATE SET points = points + excluded.points
-    `).run(customer.id, vendorId, vendorPoints);
-    db.prepare(`
-      INSERT INTO shared_pool (customer_id, points) VALUES (?, ?)
-      ON CONFLICT(customer_id) DO UPDATE SET points = points + excluded.points
-    `).run(customer.id, sharedPoints);
-    db.prepare(`
-      INSERT INTO transactions (customer_id, vendor_id, type, points, amount, processed_by, timestamp)
-      VALUES (?, ?, 'earned', ?, ?, ?, ?)
-    `).run(customer.id, vendorId, vendorPoints, amt, decoded.id, now);
-    db.prepare(`
-      INSERT INTO transactions (customer_id, vendor_id, type, points, amount, processed_by, timestamp)
-      VALUES (?, ?, 'shared_earned', ?, ?, ?, ?)
-    `).run(customer.id, vendorId, sharedPoints, amt, decoded.id, now);
+
+    const { data: existingBal } = await supabase.from('balances').select('points').eq('customer_id', customerId).eq('vendor_id', vendorId).single();
+    const currentVendorPts = existingBal ? existingBal.points : 0;
+    await supabase.from('balances').upsert({ customer_id: customerId, vendor_id: vendorId, points: currentVendorPts + vendorPoints }, { onConflict: 'customer_id,vendor_id' });
+
+    const { data: existingShared } = await supabase.from('shared_pool').select('points').eq('customer_id', customerId).single();
+    const currentSharedPts = existingShared ? existingShared.points : 0;
+    await supabase.from('shared_pool').upsert({ customer_id: customerId, points: currentSharedPts + sharedPoints }, { onConflict: 'customer_id' });
+
+    await supabase.from('transactions').insert({ customer_id: customerId, vendor_id: vendorId, type: 'earned', points: vendorPoints, amount: amt, processed_by: decoded.id, timestamp: now });
+    await supabase.from('transactions').insert({ customer_id: customerId, vendor_id: vendorId, type: 'shared_earned', points: sharedPoints, amount: amt, processed_by: decoded.id, timestamp: now });
 
     res.status(200).json({
       success: true,
@@ -221,10 +205,9 @@ router.post('/api/vendor/award', vendor_verify, (req, res) => {
   }
 });
 
-// Redeem: use_shared = true redeems from shared pool; false redeems from this vendor's balance
-router.post('/api/vendor/redeem', vendor_verify, (req, res) => {
+router.post('/api/vendor/redeem', vendor_verify, async (req, res) => {
   try {
-    const token = req.query.token;
+    const token = getTokenFromRequest(req);
     const decoded = jwt.verify(token, VENDOR_SECRET);
     const vendorId = decoded.id;
     const { phone, points: pointsToRedeem, use_shared } = req.body;
@@ -234,39 +217,33 @@ router.post('/api/vendor/redeem', vendor_verify, (req, res) => {
       return;
     }
     const phoneNorm = normalizePhoneForLookup(phone);
-    const customer = db.prepare('SELECT id FROM customers WHERE phone = ?').get(phoneNorm);
+    const { data: customer } = await supabase.from('customers').select('id').eq('phone', phoneNorm).single();
     if (!customer) {
       res.status(404).json({ success: false, msg: 'Customer not found' });
       return;
     }
     const now = Date.now();
     if (use_shared) {
-      const row = db.prepare('SELECT points FROM shared_pool WHERE customer_id = ?').get(customer.id);
+      const { data: row } = await supabase.from('shared_pool').select('points').eq('customer_id', customer.id).single();
       const available = row ? row.points : 0;
       if (available < pts) {
         res.status(400).json({ success: false, msg: 'Insufficient shared points' });
         return;
       }
-      db.prepare('UPDATE shared_pool SET points = points - ? WHERE customer_id = ?').run(pts, customer.id);
-      db.prepare(`
-        INSERT INTO transactions (customer_id, vendor_id, type, points, amount, processed_by, timestamp)
-        VALUES (?, ?, 'shared_redeemed', ?, NULL, ?, ?)
-      `).run(customer.id, vendorId, pts, decoded.id, now);
+      await supabase.from('shared_pool').update({ points: available - pts }).eq('customer_id', customer.id);
+      await supabase.from('transactions').insert({ customer_id: customer.id, vendor_id: vendorId, type: 'shared_redeemed', points: pts, amount: null, processed_by: decoded.id, timestamp: now });
     } else {
-      const row = db.prepare('SELECT id, points FROM balances WHERE customer_id = ? AND vendor_id = ?').get(customer.id, vendorId);
+      const { data: row } = await supabase.from('balances').select('id, points').eq('customer_id', customer.id).eq('vendor_id', vendorId).single();
       const available = row ? row.points : 0;
       if (available < pts) {
         res.status(400).json({ success: false, msg: 'Insufficient vendor points' });
         return;
       }
-      db.prepare('UPDATE balances SET points = points - ? WHERE customer_id = ? AND vendor_id = ?').run(pts, customer.id, vendorId);
-      db.prepare(`
-        INSERT INTO transactions (customer_id, vendor_id, type, points, amount, processed_by, timestamp)
-        VALUES (?, ?, 'redeemed', ?, NULL, ?, ?)
-      `).run(customer.id, vendorId, pts, decoded.id, now);
+      await supabase.from('balances').update({ points: available - pts }).eq('customer_id', customer.id).eq('vendor_id', vendorId);
+      await supabase.from('transactions').insert({ customer_id: customer.id, vendor_id: vendorId, type: 'redeemed', points: pts, amount: null, processed_by: decoded.id, timestamp: now });
     }
-    const redemptionSetting = db.prepare("SELECT value FROM settings WHERE key = 'point_redemption_value'").get();
-    const pointRedemptionValue = redemptionSetting ? parseFloat(redemptionSetting.value) : 0.10;
+    const { data: redemptionRow } = await supabase.from('settings').select('value').eq('key', 'point_redemption_value').single();
+    const pointRedemptionValue = redemptionRow ? parseFloat(redemptionRow.value) : 0.10;
     const dollarSavings = Math.round(pts * pointRedemptionValue * 100) / 100;
     res.status(200).json({ success: true, redeemed: pts, dollarSavings });
   } catch (e) {
@@ -274,32 +251,29 @@ router.post('/api/vendor/redeem', vendor_verify, (req, res) => {
   }
 });
 
-// List this vendor's transactions
-router.get('/api/vendor/transactions', vendor_verify, (req, res) => {
+router.get('/api/vendor/transactions', vendor_verify, async (req, res) => {
   try {
-    const token = req.query.token;
+    const token = getTokenFromRequest(req);
     const decoded = jwt.verify(token, VENDOR_SECRET);
     const vendorId = decoded.id;
     const limit = Math.min(parseInt(req.query.limit) || 50, 200);
     const offset = parseInt(req.query.offset) || 0;
-    const rows = db.prepare(`
-      SELECT t.id, t.type, t.points, t.amount, t.timestamp, c.phone, c.fullname
-      FROM transactions t
-      LEFT JOIN customers c ON c.id = t.customer_id
-      WHERE t.vendor_id = ? ORDER BY t.timestamp DESC LIMIT ? OFFSET ?
-    `).all(vendorId, limit, offset);
-    res.status(200).json({ success: true, data: rows });
+    const { data: rows } = await supabase.from('transactions').select('id, type, points, amount, timestamp, customer_id').eq('vendor_id', vendorId).order('timestamp', { ascending: false }).range(offset, offset + limit - 1);
+    const withCustomer = await Promise.all((rows || []).map(async (t) => {
+      const { data: c } = await supabase.from('customers').select('phone, fullname').eq('id', t.customer_id).single();
+      return { ...t, phone: c?.phone, fullname: c?.fullname };
+    }));
+    res.status(200).json({ success: true, data: withCustomer });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
   }
 });
 
-// Get vendor's own settings
-router.get('/api/vendor/settings', vendor_verify, (req, res) => {
+router.get('/api/vendor/settings', vendor_verify, async (req, res) => {
   try {
-    const token = req.query.token;
+    const token = getTokenFromRequest(req);
     const decoded = jwt.verify(token, VENDOR_SECRET);
-    const vendor = db.prepare('SELECT id, name, email, phone, address, points_per_dollar FROM vendors WHERE id = ?').get(decoded.id);
+    const { data: vendor } = await supabase.from('vendors').select('id, name, email, phone, address, points_per_dollar').eq('id', decoded.id).single();
     if (!vendor) {
       res.status(404).json({ success: false, msg: 'Vendor not found' });
       return;
@@ -310,16 +284,18 @@ router.get('/api/vendor/settings', vendor_verify, (req, res) => {
   }
 });
 
-// Update vendor's own profile (name, phone, address, points_per_dollar)
-router.put('/api/vendor/settings', vendor_verify, (req, res) => {
+router.put('/api/vendor/settings', vendor_verify, async (req, res) => {
   try {
-    const token = req.query.token;
+    const token = getTokenFromRequest(req);
     const decoded = jwt.verify(token, VENDOR_SECRET);
     const { name, phone, address, points_per_dollar } = req.body;
-    db.prepare(`
-      UPDATE vendors SET name = COALESCE(?, name), phone = COALESCE(?, phone), address = COALESCE(?, address), points_per_dollar = COALESCE(?, points_per_dollar) WHERE id = ?
-    `).run(name ?? undefined, phone ?? undefined, address ?? undefined, points_per_dollar ?? undefined, decoded.id);
-    const vendor = db.prepare('SELECT id, name, email, phone, address, points_per_dollar FROM vendors WHERE id = ?').get(decoded.id);
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (phone !== undefined) updates.phone = phone;
+    if (address !== undefined) updates.address = address;
+    if (points_per_dollar !== undefined) updates.points_per_dollar = points_per_dollar;
+    await supabase.from('vendors').update(updates).eq('id', decoded.id);
+    const { data: vendor } = await supabase.from('vendors').select('id, name, email, phone, address, points_per_dollar').eq('id', decoded.id).single();
     res.status(200).json({ success: true, vendor });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });
