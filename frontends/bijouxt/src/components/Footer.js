@@ -89,8 +89,7 @@ const Footer = () => {
             <div style={{ color: 'var(--text-light)', opacity: 0.9, fontSize: '0.9rem', lineHeight: 1.6 }}>
               {Company.address && <div>{Company.address}</div>}
               {Company.email && <div><a href={`mailto:${Company.email}`} style={{ color: '#fff' }}>{Company.email}</a></div>}
-              {Company.phone && <div><a href={`tel:${Company.phone.replace(/\D/g, '')}`} style={{ color: '#fff' }}>{Company.phone}</a></div>}
-              {!Company.address && !Company.email && !Company.phone && <div>Downtown Freeport, Grand Bahama</div>}
+              {!Company.address && !Company.email && <div>Downtown Freeport, Grand Bahama</div>}
             </div>
           </div>
         </div>
