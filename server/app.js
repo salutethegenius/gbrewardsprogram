@@ -65,6 +65,10 @@ const customer_routes = require('./routes/customer');
 const app = express();
 const PORT = process.env.PORT || 4040;
 
+// Behind Railway / reverse proxies, trust proxy headers so rate limiting
+// and IP detection (X-Forwarded-For) work correctly.
+app.set('trust proxy', 1);
+
 if (process.env.NODE_ENV === 'production') {
   app.use(enforce.HTTPS({ trustProtoHeader: true }));
 }
