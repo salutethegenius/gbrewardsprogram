@@ -1,17 +1,16 @@
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 
-const ses = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
-  ? new SESClient({
-      region: process.env.AWS_REGION || 'us-east-1',
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-      }
-    })
+const hasAwsCreds = !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY);
+const ses = hasAwsCreds
+  ? new SESClient({ region: (process.env.AWS_REGION || 'us-east-1').trim() })
   : null;
 
-const from = process.env.MAIL_FROM || 'noreply@example.com';
+const from = (process.env.MAIL_FROM || 'noreply@example.com').trim();
 const appName = process.env.APP_NAME || 'Rewards';
+
+if (process.env.NODE_ENV === 'production' && !ses) {
+  console.warn('[Mailer] AWS SES not configured in production. Set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and MAIL_FROM.');
+}
 
 /**
  * Send magic-link email for customer login via AWS SES.
@@ -33,7 +32,7 @@ async function sendMagicLink(to, loginLink) {
       await ses.send(
         new SendEmailCommand({
           Source: from,
-          Destination: { ToAddresses: [to] },
+          Destination: { ToAddresses: [to.trim()] },
           Message: {
             Subject: { Data: `Sign in to ${appName}`, Charset: 'UTF-8' },
             Body: {
@@ -45,7 +44,10 @@ async function sendMagicLink(to, loginLink) {
       );
       return true;
     } catch (err) {
-      console.error('[Mailer] Send failed:', err.message || err);
+      const code = err.name || err.Code || '';
+      const msg = err.message || err.Message || String(err);
+      console.error('[Mailer] Send failed:', code, msg);
+      if (err.$metadata) console.error('[Mailer] RequestId:', err.$metadata.requestId);
       return false;
     }
   }

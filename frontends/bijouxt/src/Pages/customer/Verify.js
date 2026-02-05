@@ -41,7 +41,7 @@ const CustomerVerify = ({ title }) => {
           cookies.setCookies('customer', JSON.stringify(data.customer), 5);
           cookies.setCookies('customer-token', data.token, 0.5);
           setStatus('ok');
-          navigate('/customer/dashboard');
+          window.location.href = '/customer/dashboard';
         } else {
           setToastMsg(data.msg || 'Invalid or expired link.');
           setSeverity('error');
