@@ -156,7 +156,11 @@ router.post('/api/points', admin_verify, async (req, res) => {
       to_user,
       amount: amount != null ? amount : null
     });
-    const { data: updated } = await supabase.from('users').select('id, email, fullname, points').eq('id', to_user).single();
+    const { data: updated, error: updatedErr } = await supabase.from('users').select('id, email, fullname, points').eq('id', to_user).single();
+    if (updatedErr || !updated) {
+      res.status(500).json({ success: false, msg: 'Failed to fetch updated user' });
+      return;
+    }
     res.status(200).json({ success: true, user: updated });
   } catch (e) {
     res.status(500).json({ success: false, error: e.message });

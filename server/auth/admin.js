@@ -3,6 +3,7 @@ const joi = require('joi');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { supabase } = require('../database/config');
+const { logAudit } = require('../utilities/audit');
 
 const loginSchema = joi.object({
   email: joi.string().min(5).required().email(),
@@ -29,6 +30,7 @@ router.post('/api/admin/signin', async (req, res) => {
     }
     const token = jwt.sign({ id: row.id, store_id: row.store_id }, process.env.ADMIN_TOKEN, { expiresIn: '8h' });
     const admin = { id: row.id, store_id: row.store_id, email: row.email, fullname: row.fullname };
+    await logAudit('admin', row.id, 'login', null, null, null, req);
     res.status(200).json({ success: true, admin, token });
   } catch (err) {
     if (err.isJoi) {

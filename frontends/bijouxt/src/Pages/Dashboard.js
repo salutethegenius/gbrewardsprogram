@@ -109,13 +109,22 @@ const Dashboard = ({ title }) => {
 
 
     useEffect(() => {
-        const stringify_user = cookies.getCookies('user');
-        if (stringify_user.length > 10) {
-            const user_ = JSON.parse(stringify_user)
-            dispatch(updateuser(user_))
-            setUser(user_)
-        } else {
-            navigate('/')
+        const stringify_user = cookies.getCookies('user') || '';
+        if (stringify_user.length <= 10) {
+            navigate('/');
+            return;
+        }
+        try {
+            const user_ = JSON.parse(stringify_user);
+            if (user_ && typeof user_ === 'object') {
+                dispatch(updateuser(user_));
+                setUser(user_);
+            } else {
+                navigate('/');
+            }
+        } catch {
+            cookies.deleteCookies('user');
+            navigate('/');
         }
         //eslint-disable-next-line
     }, [])
@@ -142,7 +151,7 @@ const Dashboard = ({ title }) => {
                             </Flexbox>
                             <small>Total points earned</small>
                             <Typography style={{ fontSize: isMobile ? '60px' : '80px', opacity: loading && 0 }} variant="h2">
-                                {(user.points).toLocaleString()}
+                                {(user?.points ?? 0).toLocaleString()}
                             </Typography>
                             {/* Delete from here */}
                             {isMobile && <div>

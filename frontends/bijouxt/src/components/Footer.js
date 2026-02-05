@@ -47,7 +47,10 @@ const Footer = () => {
   const company = [
     { label: 'About DFBA', href: 'https://gbpa.com/' },
     { label: 'Vision', href: '/#about' },
-    { label: 'Contact', href: Company.email ? `mailto:${Company.email}` : '#' }
+    { label: 'Contact', href: Company.email ? `mailto:${Company.email}` : '#' },
+    { label: 'Terms of Service', to: '/terms' },
+    { label: 'Privacy Policy', to: '/privacy' },
+    { label: 'Data Handling', to: '/data-handling' }
   ];
 
   return (
@@ -104,8 +107,18 @@ const Footer = () => {
         >
           <small style={{ opacity: 0.8, fontSize: '0.85rem' }}>
             © {new Date().getFullYear()} {Company.name}. All rights reserved.
-            {Company.privacy && <><span style={{ margin: '0 8px' }}>|</span><a href={Company.privacy} style={{ color: 'inherit' }}>Privacy Policy</a></>}
-            {Company.terms && <><span style={{ margin: '0 8px' }}>|</span><a href={Company.terms} style={{ color: 'inherit' }}>Terms & Conditions</a></>}
+            <span style={{ margin: '0 8px' }}>|</span>
+            <Link to="/terms" style={{ color: 'inherit' }}>Terms</Link>
+            <span style={{ margin: '0 8px' }}>|</span>
+            <Link to="/privacy" style={{ color: 'inherit' }}>Privacy</Link>
+            <span style={{ margin: '0 8px' }}>|</span>
+            <Link to="/data-handling" style={{ color: 'inherit' }}>Data Handling</Link>
+          </small>
+          <small style={{ opacity: 0.85, fontSize: '0.85rem' }}>
+            Made with <span style={{ color: '#e74c3c' }}>♥</span>{' '}
+            <a href="https://kemisdigital.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>
+              KemisDigital
+            </a>
           </small>
         </div>
       </div>

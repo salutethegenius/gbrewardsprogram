@@ -16,6 +16,7 @@ const Join = ({ title }) => {
   const vendorId = searchParams.get('vendor') || '';
   const [phone, setPhone] = useState('');
   const [fullname, setFullname] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [severity, setSeverity] = useState('success');
@@ -41,7 +42,7 @@ const Join = ({ title }) => {
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vendor_id: vendorId, phone: trimmed, fullname: (fullname || '').trim() })
+      body: JSON.stringify({ vendor_id: vendorId, phone: trimmed, fullname: (fullname || '').trim(), email: (email || '').trim() })
     })
       .then((res) => res.json())
       .then((data) => {
@@ -52,7 +53,7 @@ const Join = ({ title }) => {
           setSeverity('success');
           setOpen(true);
         } else {
-          setToastMsg(data.msg || 'Something went wrong');
+          setToastMsg(data.msg || data.error || 'Something went wrong');
           setSeverity('error');
           setOpen(true);
         }
@@ -123,6 +124,14 @@ const Join = ({ title }) => {
               value={fullname}
               onChange={(e) => setFullname(e.target.value)}
               placeholder="Your name"
+              style={{ width: '100%', marginBottom: 12, marginTop: 4 }}
+            />
+            <small>Email (optional – for secure login link)</small>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
               style={{ width: '100%', marginBottom: 20, marginTop: 4 }}
             />
             <Button

@@ -2,12 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import cookies from '../../utilities/Cookies';
 import Toast from '../../components/Toast';
-import Flexbox from '../../components/Flexbox';
-import Spacebox from '../../components/Spacebox';
 import { Typography, Container } from '@mui/material';
 import Button from '../../components/Button';
 import requests from '../../handlers/requests';
-import Company from '../../utilities/Company';
 import Footer from '../../components/Footer';
 
 const VendorSettings = ({ title }) => {
@@ -70,7 +67,9 @@ const VendorSettings = ({ title }) => {
       </Toast>
       <div className="dashboard-header" style={{ background: 'var(--primary-dark)', padding: '16px 24px', boxShadow: '0 2px 10px rgba(0,0,0,0.15)', display: 'flex', gap: 16 }}>
         <Link to="/vendor/dashboard" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Dashboard</Link>
+        <Link to="/vendor/customers" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Customers</Link>
         <Link to="/vendor/transactions" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Transactions</Link>
+        <Link to="/vendor/settings" style={{ color: 'var(--text-light)', opacity: 0.9, fontWeight: 700 }}>Settings</Link>
       </div>
       <Container style={{ paddingTop: 32, paddingBottom: 32 }}>
         <Typography variant="h5" className="bold" style={{ marginBottom: 24 }}>

@@ -90,7 +90,11 @@ router.post('/api/user/signup', async (req, res) => {
       res.status(500).json({ success: false, error: insertErr, msg: 'Server error' });
       return;
     }
-    const { data: rowData } = await supabase.from('users').select('id, store_id, email, fullname, phone, points').eq('id', id).single();
+    const { data: rowData, error: selectErr } = await supabase.from('users').select('id, store_id, email, fullname, phone, points').eq('id', id).single();
+    if (selectErr || !rowData) {
+      res.status(500).json({ success: false, msg: 'Server error' });
+      return;
+    }
     const row = rowData;
     if (!process.env.TOKEN) {
       res.status(503).json({ success: false, msg: 'Server configuration error' });

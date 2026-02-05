@@ -76,8 +76,12 @@ app.use(helmet({
 }));
 
 const frontendOrigin = process.env.FRONTEND_URL;
+// In development (no FRONTEND_URL), allow localhost so the app can be tested locally
+const corsOrigin = frontendOrigin
+  ? [frontendOrigin]
+  : ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://127.0.0.1:3001'];
 app.use(cors({
-  origin: frontendOrigin ? [frontendOrigin] : false,
+  origin: corsOrigin,
   credentials: true
 }));
 app.use(express.static('public'));
@@ -93,6 +97,7 @@ app.use('/api/admin/signin', authLimiter);
 app.use('/api/vendor/signin', authLimiter);
 app.use('/api/vendor/signup', authLimiter);
 app.use('/api/customer/login', authLimiter);
+app.use('/api/customer/verify', authLimiter);
 
 // Stricter rate limit on sensitive endpoints
 app.use('/api/vendor/award', sensitiveLimiter);

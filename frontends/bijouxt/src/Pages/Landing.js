@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import Company from '../utilities/Company';
 import Flexbox from '../components/Flexbox';
-import Spacebox from '../components/Spacebox';
 import Button from '../components/Button';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';

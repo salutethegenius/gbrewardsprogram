@@ -55,10 +55,10 @@ const AdminVendors = ({ title }) => {
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, token]);
 
   const pendingVendors = (vendors || []).filter((v) => !v.is_active);
-  const activeVendors = (vendors || []).filter((v) => v.is_active);
 
   const handleCreate = () => {
     if (!form.name || !form.email || !form.password) {
@@ -110,6 +110,7 @@ const AdminVendors = ({ title }) => {
           <Link to="/admin/customers" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Customers</Link>
           <Link to="/admin/transactions" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Transactions</Link>
           <Link to="/admin/settings" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Settings</Link>
+          <Link to="/admin/audit" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Audit</Link>
         </Flexbox>
       </div>
       <Container style={{ paddingTop: 32, paddingBottom: 32 }}>

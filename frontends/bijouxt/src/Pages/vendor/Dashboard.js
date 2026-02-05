@@ -21,6 +21,7 @@ const VendorDashboard = ({ title }) => {
   const [msg, setToastMsg] = useState('');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
+  const [pointsPerDollar, setPointsPerDollar] = useState(1);
   const [recentTx, setRecentTx] = useState([]);
   const [phone, setPhone] = useState('');
   const [customer, setCustomer] = useState(null);
@@ -31,7 +32,7 @@ const VendorDashboard = ({ title }) => {
   const [useShared, setUseShared] = useState(false);
   const [redeemLoading, setRedeemLoading] = useState(false);
   const [joinUrl, setJoinUrl] = useState('');
-  const [vendorName, setVendorName] = useState('');
+  const [, setVendorName] = useState('');
   const [manualPhone, setManualPhone] = useState('');
   const [manualFullname, setManualFullname] = useState('');
   const [manualLoading, setManualLoading] = useState(false);
@@ -48,6 +49,7 @@ const VendorDashboard = ({ title }) => {
     const url = `${process.env.REACT_APP_SERVER || '/'}api/vendor/dashboard`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => {
       setStats(res.stats);
+      setPointsPerDollar(res.pointsPerDollar ?? 1);
       setRecentTx(res.recentTransactions || []);
     }, null, token);
   };
@@ -95,10 +97,12 @@ const VendorDashboard = ({ title }) => {
 
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate, token]);
 
   useEffect(() => {
     loadJoinInfo();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const handleLookup = () => {
@@ -200,6 +204,7 @@ const VendorDashboard = ({ title }) => {
           {Company.name} – Vendor
         </Typography>
         <Flexbox style={{ gap: 16 }}>
+          <Link to="/vendor/customers" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Customers</Link>
           <Link to="/vendor/transactions" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Transactions</Link>
           <Link to="/vendor/settings" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Settings</Link>
           <button onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)', opacity: 0.9 }}>
@@ -212,10 +217,12 @@ const VendorDashboard = ({ title }) => {
         {!loading && stats && (
           <>
             <Flexbox style={{ flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
-              <div style={{ background: 'var(--primary-blue)', borderRadius: 12, padding: 20, minWidth: 140 }}>
-                <Typography style={{ fontSize: 14, opacity: 0.9, color: '#fff' }}>Customers</Typography>
-                <Typography variant="h5" className="bold" style={{ color: '#fff' }}>{stats.customers}</Typography>
-              </div>
+              <Link to="/vendor/customers" style={{ textDecoration: 'none' }}>
+                <div style={{ background: 'var(--primary-blue)', borderRadius: 12, padding: 20, minWidth: 140 }}>
+                  <Typography style={{ fontSize: 14, opacity: 0.9, color: '#fff' }}>Customers</Typography>
+                  <Typography variant="h5" className="bold" style={{ color: '#fff' }}>{stats.customers}</Typography>
+                </div>
+              </Link>
               <div style={{ background: 'var(--primary-dark)', borderRadius: 12, padding: 20, minWidth: 140 }}>
                 <Typography style={{ fontSize: 14, opacity: 0.9, color: '#fff' }}>Points Today</Typography>
                 <Typography variant="h5" className="bold" style={{ color: '#fff' }}>{stats.pointsAwardedToday}</Typography>
@@ -306,11 +313,29 @@ const VendorDashboard = ({ title }) => {
                   </div>
                   <Spacebox padding="16px" />
                   <Flexbox style={{ gap: 16, flexWrap: 'wrap' }}>
-                    <div>
-                      <small>Award points (purchase amount $)</small>
-                      <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" style={{ width: 100 }} />
-                      <Spacebox padding="8px" />
-                      <Button style={{ background: 'var(--accent-gold)', color: 'var(--text-dark)', padding: '8px 16px', borderRadius: 8 }} handleClick={handleAward}>
+                    <div style={{ minWidth: 200 }}>
+                      <Typography className="bold" style={{ marginBottom: 8 }}>Award points</Typography>
+                      <Typography style={{ fontSize: 13, color: 'var(--primary-dark)', opacity: 0.9, marginBottom: 12 }}>
+                        {pointsPerDollar === 1
+                          ? 'Pricing: 10¢ per $1 spent (1 pt/$1; 1 point = $0.10)'
+                          : `Your rate: ${pointsPerDollar} pts per $1 spent (1 point = $0.10)`}
+                      </Typography>
+                      <small>Enter total spent ($)</small>
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="e.g. 25.00"
+                        style={{ width: '100%', marginTop: 4, marginBottom: 8 }}
+                      />
+                      {amount && !isNaN(parseFloat(amount)) && parseFloat(amount) > 0 && (
+                        <Typography style={{ fontSize: 14, color: 'var(--primary-dark)', marginBottom: 12 }}>
+                          {parseFloat(amount).toFixed(2)} × {pointsPerDollar} pts/$ = <strong>{Math.round(parseFloat(amount) * pointsPerDollar)} points</strong> will be awarded
+                        </Typography>
+                      )}
+                      <Button style={{ background: 'var(--accent-gold)', color: 'var(--text-dark)', padding: '10px 20px', borderRadius: 8 }} handleClick={handleAward}>
                         {awardLoading ? 'Awarding...' : 'Award points'}
                       </Button>
                     </div>

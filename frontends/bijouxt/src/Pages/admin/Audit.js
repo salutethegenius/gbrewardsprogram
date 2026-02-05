@@ -6,9 +6,9 @@ import { Typography, Container } from '@mui/material';
 import requests from '../../handlers/requests';
 import Footer from '../../components/Footer';
 
-const AdminTransactions = ({ title }) => {
+const AdminAudit = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
+    document.querySelector('title').textContent = title;
   }
 
   const [open, setOpen] = useState(false);
@@ -25,17 +25,9 @@ const AdminTransactions = ({ title }) => {
       return;
     }
     setLoading(true);
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/transactions?limit=100`;
+    const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/audit?limit=200`;
     requests.makeGet(url, setOpen, setSeverity, setToastMsg, setLoading, (res) => setData(res.data || []), null, token);
   }, [navigate, token]);
-
-  const typeLabel = (t) => {
-    if (t === 'earned') return 'Earned';
-    if (t === 'shared_earned') return 'Shared earned';
-    if (t === 'redeemed') return 'Redeemed';
-    if (t === 'shared_redeemed') return 'Shared redeemed';
-    return t;
-  };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg-light)' }}>
@@ -48,11 +40,14 @@ const AdminTransactions = ({ title }) => {
         <Link to="/admin/customers" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Customers</Link>
         <Link to="/admin/transactions" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Transactions</Link>
         <Link to="/admin/settings" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Settings</Link>
-        <Link to="/admin/audit" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Audit</Link>
+        <Link to="/admin/audit" style={{ color: 'var(--text-light)', opacity: 0.9, fontWeight: 700 }}>Audit</Link>
       </div>
       <Container style={{ paddingTop: 32, paddingBottom: 32 }}>
-        <Typography variant="h5" className="bold" style={{ marginBottom: 24 }}>
-          Transactions
+        <Typography variant="h5" className="bold" style={{ marginBottom: 8 }}>
+          Audit log
+        </Typography>
+        <Typography style={{ fontSize: 14, opacity: 0.8, marginBottom: 24 }}>
+          Compliance view: admin and key actions (Bahamas DPA).
         </Typography>
         {loading && <Typography>Loading...</Typography>}
         {!loading && (
@@ -60,30 +55,30 @@ const AdminTransactions = ({ title }) => {
             <table>
               <thead>
                 <tr>
-                  <td>Date</td>
-                  <td>Type</td>
-                  <td>Customer</td>
-                  <td>Vendor</td>
-                  <td>Points</td>
-                  <td>Amount</td>
+                  <td>Time</td>
+                  <td>Actor</td>
+                  <td>Action</td>
+                  <td>Resource</td>
+                  <td>ID</td>
+                  <td>IP</td>
                 </tr>
               </thead>
               <tbody>
                 {data.length === 0 && (
                   <tr>
                     <td colSpan={6} style={{ textAlign: 'center', padding: 24 }}>
-                      No transactions yet.
+                      No audit entries yet.
                     </td>
                   </tr>
                 )}
-                {data.map((t) => (
-                  <tr key={t.id}>
-                    <td>{t.timestamp ? new Date(t.timestamp).toLocaleString() : '—'}</td>
-                    <td>{typeLabel(t.type)}</td>
-                    <td>{t.customer_phone || t.customer_name || '—'}</td>
-                    <td>{t.vendor_name || '—'}</td>
-                    <td>{t.points}</td>
-                    <td>{t.amount != null ? t.amount : '—'}</td>
+                {data.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.created_at ? new Date(row.created_at).toLocaleString() : '—'}</td>
+                    <td>{row.actor_type}{row.actor_id ? ` (${String(row.actor_id).slice(0, 8)}…)` : ''}</td>
+                    <td>{row.action || '—'}</td>
+                    <td>{row.resource_type || '—'}</td>
+                    <td>{row.resource_id ? String(row.resource_id).slice(0, 8) + '…' : '—'}</td>
+                    <td style={{ fontSize: 12 }}>{row.ip || '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -96,4 +91,4 @@ const AdminTransactions = ({ title }) => {
   );
 };
 
-export default AdminTransactions;
+export default AdminAudit;

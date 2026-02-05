@@ -22,7 +22,7 @@ const useFetch = (url, token) => {
                 setError(null);
                 setIsLoading(false)
             }else {
-                setError(res.msg);
+                setError(res.msg || res.error || 'Request failed');
                 setData(null);
                 setIsLoading(false)
             }

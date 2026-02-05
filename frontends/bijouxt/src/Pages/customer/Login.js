@@ -11,11 +11,12 @@ import Company from '../../utilities/Company';
 
 const CustomerLogin = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
-    if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
+    document.querySelector('title').textContent = title;
   }
 
   const [loading, setLoading] = useState(false);
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [open, setOpen] = useState(false);
   const [severity, setSeverity] = useState('success');
   const [msg, setToastMsg] = useState('');
@@ -33,15 +34,15 @@ const CustomerLogin = ({ title }) => {
     const url = `${process.env.REACT_APP_SERVER || '/'}api/customer/login`;
     requests.makePost(
       url,
-      { phone: trimmed },
+      { phone: trimmed, email: (email || '').trim() },
       setOpen,
       setSeverity,
       setToastMsg,
       setLoading,
       (res) => {
-        cookies.setCookies('customer', JSON.stringify(res.customer), 5);
-        cookies.setCookies('customer-token', res.token, 0.5);
-        navigate('/customer/dashboard');
+        setToastMsg(res.msg || 'Check your email for a login link.');
+        setSeverity('success');
+        setOpen(true);
       },
       null
     );
@@ -56,7 +57,7 @@ const CustomerLogin = ({ title }) => {
 
   return (
     <div className="customer-login-page">
-      <Toast open={open} setOpen={setOpen} severity={severity} timer={4000}>
+      <Toast open={open} setOpen={setOpen} severity={severity} timer={6000}>
         {msg}
       </Toast>
       <Flexbox
@@ -85,17 +86,25 @@ const CustomerLogin = ({ title }) => {
               View your rewards
             </Typography>
             <Typography textAlign="center" style={{ fontSize: 14, opacity: 0.8, marginTop: 8 }}>
-              Enter your phone number to see your points
+              Enter your phone number. We&apos;ll send a secure login link to your email.
             </Typography>
             <Spacebox padding="20px" />
-            <small>Phone number</small>
+            <small>Phone number *</small>
             <input
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="e.g. 2425551234"
+              style={{ width: '100%', marginTop: 4, marginBottom: 12 }}
             />
-            <Spacebox padding="20px" />
+            <small>Email (if we don&apos;t have it on file)</small>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              style={{ width: '100%', marginTop: 4, marginBottom: 20 }}
+            />
             <Button
               style={{
                 background: 'var(--primary-blue)',
@@ -104,9 +113,9 @@ const CustomerLogin = ({ title }) => {
                 padding: '15px 20px',
                 borderRadius: 8
               }}
-              handleClick={() => submit()}
+              handleClick={submit}
             >
-              {loading ? 'Loading...' : 'Continue'}
+              {loading ? 'Sending link...' : 'Send login link'}
             </Button>
           </div>
         </div>

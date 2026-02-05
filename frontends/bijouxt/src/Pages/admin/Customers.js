@@ -4,7 +4,6 @@ import cookies from '../../utilities/Cookies';
 import Toast from '../../components/Toast';
 import { Typography, Container } from '@mui/material';
 import requests from '../../handlers/requests';
-import Company from '../../utilities/Company';
 import Footer from '../../components/Footer';
 
 const AdminCustomers = ({ title }) => {
@@ -40,6 +39,7 @@ const AdminCustomers = ({ title }) => {
         <Link to="/admin/vendors" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Vendors</Link>
         <Link to="/admin/transactions" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Transactions</Link>
         <Link to="/admin/settings" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Settings</Link>
+        <Link to="/admin/audit" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Audit</Link>
       </div>
       <Container style={{ paddingTop: 32, paddingBottom: 32 }}>
         <Typography variant="h5" className="bold" style={{ marginBottom: 24 }}>

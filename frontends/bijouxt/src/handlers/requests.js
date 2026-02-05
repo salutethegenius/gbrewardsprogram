@@ -22,13 +22,13 @@ const makePost = (url, body, setOpen, setSeverity, setToastMsg, setLoading, acti
                 if (res.error === "Access Denied")
                     navigate('/')
 
-                setToastMsg(res.msg)
+                setToastMsg(res.msg || res.error || 'Request failed')
                 setSeverity("error")
                 setOpen(true)
                 setLoading(false)
             }
         }).catch(err => {
-            setToastMsg("An error occurred")
+            setToastMsg(err.message || "An error occurred")
             setSeverity("error")
             setOpen(true)
             setLoading(false)
@@ -57,13 +57,13 @@ const makeGet = (url, setOpen, setSeverity, setToastMsg, setLoading, action, suc
             } else {
                 if (res.error === "Unauthorised request")
                     navigate('/')
-                setToastMsg(res.msg)
+                setToastMsg(res.msg || res.error || 'Request failed')
                 setSeverity("error")
                 setOpen(true)
                 setLoading(false)
             }
         }).catch(err => {
-            setToastMsg("An error occurred")
+            setToastMsg(err.message || "An error occurred")
             setSeverity("error")
             setOpen(true)
             setLoading(false)

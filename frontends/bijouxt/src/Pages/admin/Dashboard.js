@@ -60,6 +60,7 @@ const AdminDashboard = ({ title }) => {
           <Link to="/admin/customers" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Customers</Link>
           <Link to="/admin/transactions" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Transactions</Link>
           <Link to="/admin/settings" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Settings</Link>
+          <Link to="/admin/audit" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Audit</Link>
           <button onClick={handleLogout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-light)', opacity: 0.9 }}>
             Logout
           </button>
@@ -80,11 +81,12 @@ const AdminDashboard = ({ title }) => {
                     borderRadius: 12,
                     padding: 24,
                     minWidth: 160,
-                    opacity: 0.95
+                    opacity: 0.95,
+                    color: 'white'
                   }}
                 >
-                  <Typography style={{ fontSize: 14, opacity: 0.9 }}>{card.label}</Typography>
-                  <Typography variant="h4" className="bold">
+                  <Typography style={{ fontSize: 14, opacity: 0.9, color: 'white' }}>{card.label}</Typography>
+                  <Typography variant="h4" className="bold" style={{ color: 'white' }}>
                     {card.value}
                   </Typography>
                 </div>

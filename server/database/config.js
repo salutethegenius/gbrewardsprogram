@@ -18,11 +18,12 @@ async function seedAsync() {
   const { data: stores } = await supabase.from('stores').select('id').limit(1);
   if (!stores || stores.length === 0) {
     const storeId = uuidv4();
-    await supabase.from('stores').insert({
+    const { error: storeErr } = await supabase.from('stores').insert({
       id: storeId,
       name: 'Default Store',
       created_at: new Date(now).toISOString()
     });
+    if (storeErr) throw storeErr;
   }
 
   // Optionally seed first admin

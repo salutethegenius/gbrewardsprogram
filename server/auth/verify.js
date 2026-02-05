@@ -5,13 +5,15 @@ function getTokenFromRequest(req) {
     if (auth && typeof auth === 'string' && auth.startsWith('Bearer ')) {
         return auth.slice(7).trim();
     }
-    return req.query.token || null;
+    return null;
 }
 
 const verify = (req, res, next) => {
     const token = getTokenFromRequest(req);
+    const isCustomerRoute = req.path && req.path.startsWith('/api/customer/');
+    const authMsg = isCustomerRoute ? 'Session expired or invalid. Please sign in again.' : 'Unauthorised User';
     if (!token) {
-        res.status(401).json({ success: false, error: 'Access Denied', msg: 'Unauthorised User' });
+        res.status(401).json({ success: false, error: 'Access Denied', msg: authMsg });
         return;
     }
     try {
@@ -23,7 +25,7 @@ const verify = (req, res, next) => {
         jwt.verify(token, secret);
         next();
     } catch (e) {
-        res.status(401).json({ success: false, error: 'Access Denied', msg: 'Invalid Auth Token' });
+        res.status(401).json({ success: false, error: 'Access Denied', msg: isCustomerRoute ? authMsg : 'Invalid Auth Token' });
     }
 }
 

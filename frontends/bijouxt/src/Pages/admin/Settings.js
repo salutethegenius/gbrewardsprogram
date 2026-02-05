@@ -7,7 +7,6 @@ import Spacebox from '../../components/Spacebox';
 import { Typography, Container } from '@mui/material';
 import Button from '../../components/Button';
 import requests from '../../handlers/requests';
-import Company from '../../utilities/Company';
 import Footer from '../../components/Footer';
 
 const AdminSettings = ({ title }) => {
@@ -19,7 +18,7 @@ const AdminSettings = ({ title }) => {
   const [severity, setSeverity] = useState('success');
   const [msg, setToastMsg] = useState('');
   const [loading, setLoading] = useState(true);
-  const [settings, setSettings] = useState({});
+  const [, setSettings] = useState({});
   const [sharedPct, setSharedPct] = useState(20);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
@@ -64,6 +63,8 @@ const AdminSettings = ({ title }) => {
         <Link to="/admin/vendors" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Vendors</Link>
         <Link to="/admin/customers" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Customers</Link>
         <Link to="/admin/transactions" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Transactions</Link>
+        <Link to="/admin/settings" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Settings</Link>
+        <Link to="/admin/audit" style={{ color: 'var(--text-light)', opacity: 0.9 }}>Audit</Link>
       </div>
       <Container style={{ paddingTop: 32, paddingBottom: 32 }}>
         <Typography variant="h5" className="bold" style={{ marginBottom: 24 }}>

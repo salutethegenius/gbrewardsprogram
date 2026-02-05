@@ -43,7 +43,7 @@ const ScanCode = ({ setOpen, setSeverity, setToastMsg, setLoading, setOpenScanne
 
             const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/user/points?sid=${Company.store_id}&uid=${user.id}`
 
-            requests.makePost(url, { points: points, user_points: (user.points + points), amount: parseFloat(amount) }, setOpen, setSeverity, setToastMsg, setALoading,
+            requests.makePost(url, { points: points, user_points: ((user.points ?? 0) + points), amount: parseFloat(amount) }, setOpen, setSeverity, setToastMsg, setALoading,
                 (res) => {
                     loadData()
                     setOpenScanner(false)
@@ -59,10 +59,10 @@ const ScanCode = ({ setOpen, setSeverity, setToastMsg, setLoading, setOpenScanne
     }
 
     const handleRedeem = () => {
-        if (window.confirm("You are about to redeem " + user.fullname + "'s points?")) {
-            if (user.points > 0) {
+        if (window.confirm("You are about to redeem " + (user.fullname || 'Customer') + "'s points?")) {
+            if ((user.points ?? 0) > 0) {
                 setRLoading(true)
-                const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/user/redeem?sid=${Company.store_id}&uid=${barcode}`
+                const url = `${process.env.REACT_APP_SERVER || '/'}api/admin/user/redeem?sid=${Company.store_id}&uid=${user.id}`
 
                 requests.makeGet(url, setOpen, setSeverity, setToastMsg, setRLoading,
                     (res) => {
@@ -135,7 +135,7 @@ const ScanCode = ({ setOpen, setSeverity, setToastMsg, setLoading, setOpenScanne
                         <div></div>
                         <span style={{ fontSize: '20px' }}>
                             <b>
-                                {user.points}
+                                {user.points ?? 0}
                             </b>
                         </span>
                     </div>

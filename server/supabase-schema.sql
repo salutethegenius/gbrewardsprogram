@@ -116,6 +116,31 @@ CREATE TABLE IF NOT EXISTS transactions (
   timestamp BIGINT
 );
 
+-- Customer magic-link login tokens (one-time use, short-lived)
+CREATE TABLE IF NOT EXISTS customer_login_tokens (
+  token TEXT PRIMARY KEY,
+  customer_id UUID REFERENCES customers(id) ON DELETE CASCADE NOT NULL,
+  expires_at BIGINT NOT NULL,
+  created_at BIGINT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_customer_login_tokens_expires ON customer_login_tokens(expires_at);
+
+-- Audit log for compliance (admin/vendor actions)
+CREATE TABLE IF NOT EXISTS audit_log (
+  id SERIAL PRIMARY KEY,
+  actor_type TEXT NOT NULL,
+  actor_id TEXT,
+  action TEXT NOT NULL,
+  resource_type TEXT,
+  resource_id TEXT,
+  details JSONB,
+  ip TEXT,
+  user_agent TEXT,
+  created_at BIGINT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_audit_log_created ON audit_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_log_actor ON audit_log(actor_type, actor_id);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_balances_customer ON balances(customer_id);
 CREATE INDEX IF NOT EXISTS idx_balances_vendor ON balances(vendor_id);
