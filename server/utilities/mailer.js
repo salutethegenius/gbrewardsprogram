@@ -1,13 +1,12 @@
-const nodemailer = require('nodemailer');
+const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
 
-const transporter = process.env.SMTP_HOST
-  ? nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587', 10),
-      secure: process.env.SMTP_SECURE === 'true',
-      auth: process.env.SMTP_USER
-        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-        : undefined
+const ses = process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+  ? new SESClient({
+      region: process.env.AWS_REGION || 'us-east-1',
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+      }
     })
   : null;
 
@@ -15,7 +14,8 @@ const from = process.env.MAIL_FROM || 'noreply@example.com';
 const appName = process.env.APP_NAME || 'Rewards';
 
 /**
- * Send magic-link email for customer login. If SMTP is not configured, logs the link (dev only).
+ * Send magic-link email for customer login via AWS SES.
+ * If AWS is not configured, logs the link in development only.
  * @param {string} to - Email address
  * @param {string} loginLink - Full URL to open (e.g. https://app.com/customer/verify?token=xxx)
  * @returns {Promise<boolean>} - true if sent or logged
@@ -28,19 +28,30 @@ async function sendMagicLink(to, loginLink) {
   `;
   const text = `Sign in to ${appName}: ${loginLink}\n\nThis link expires in 15 minutes.`;
 
-  if (transporter) {
-    await transporter.sendMail({
-      from,
-      to,
-      subject: `Sign in to ${appName}`,
-      text,
-      html
-    });
-    return true;
+  if (ses) {
+    try {
+      await ses.send(
+        new SendEmailCommand({
+          Source: from,
+          Destination: { ToAddresses: [to] },
+          Message: {
+            Subject: { Data: `Sign in to ${appName}`, Charset: 'UTF-8' },
+            Body: {
+              Text: { Data: text, Charset: 'UTF-8' },
+              Html: { Data: html, Charset: 'UTF-8' }
+            }
+          }
+        })
+      );
+      return true;
+    } catch (err) {
+      console.error('[Mailer] Send failed:', err.message || err);
+      return false;
+    }
   }
-  // Development: log the link so you can test without SMTP
+  // Development: log the link so you can test without AWS
   if (process.env.NODE_ENV !== 'production') {
-    console.log('[Mailer] Magic link (SMTP not configured):', loginLink);
+    console.log('[Mailer] Magic link (AWS SES not configured):', loginLink);
     return true;
   }
   return false;
