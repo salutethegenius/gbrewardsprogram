@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Company from '../utilities/Company';
 import Flexbox from '../components/Flexbox';
@@ -27,6 +28,24 @@ const Landing = ({ title }) => {
   if (typeof document !== 'undefined' && document.querySelector('title')) {
     if (typeof document !== 'undefined' && document.querySelector('title')) document.querySelector('title').textContent = title;
   }
+
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      if (window.sessionStorage.getItem('gb_confetti_shown')) return;
+      setShowConfetti(true);
+      window.sessionStorage.setItem('gb_confetti_shown', '1');
+      const timer = window.setTimeout(() => setShowConfetti(false), 4000);
+      return () => window.clearTimeout(timer);
+    } catch {
+      // Fallback if sessionStorage is unavailable
+      setShowConfetti(true);
+      const timer = setTimeout(() => setShowConfetti(false), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const heroVideoSrc = '/assets/gbpa-hero.mp4';
 
@@ -77,8 +96,34 @@ const Landing = ({ title }) => {
             zIndex: 1
           }}
         />
+        {showConfetti && (
+          <div className="confetti-layer">
+            {Array.from({ length: 80 }).map((_, i) => (
+              <span
+                key={i}
+                className="confetti-piece"
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 2}s`,
+                  backgroundColor: ['#38bdf8', '#0ea5e9', '#1d4ed8', '#a5b4fc'][i % 4]
+                }}
+              />
+            ))}
+          </div>
+        )}
         <Flexbox flexDirection="column" alignItems="center" style={{ flexDirection: 'column', textAlign: 'center', position: 'relative', zIndex: 2 }}>
-          <Typography variant="h1" component="h1" style={{ fontSize: '3rem', color: 'var(--text-light)', marginBottom: 12, fontWeight: 800 }}>
+          <Typography
+            variant="h1"
+            component="h1"
+            className="hero-title-shimmer"
+            style={{
+              fontSize: '3.75rem',
+              color: 'var(--text-light)',
+              marginBottom: 12,
+              fontWeight: 800,
+              letterSpacing: '0.04em'
+            }}
+          >
             {Company.name}
           </Typography>
           <Typography className="hero-tagline" style={{ fontSize: '1.35rem', color: 'var(--text-light)', opacity: 0.95, fontWeight: 600, marginBottom: 40 }}>
@@ -88,8 +133,8 @@ const Landing = ({ title }) => {
             <Link to="/customer/login">
               <Button
                 style={{
-                  background: 'var(--accent-gold)',
-                  color: 'var(--text-dark)',
+                  background: '#38bdf8',
+                  color: '#ffffff',
                   padding: '16px 32px',
                   borderRadius: 8,
                   fontWeight: 700
@@ -120,15 +165,18 @@ const Landing = ({ title }) => {
 
       {/* How It Works */}
       <Section id="how-it-works" background="gray">
-        <Typography variant="h2" className="section-heading" style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-dark)', textAlign: 'center', marginBottom: 48 }}>
+        <Typography variant="h2" className="section-heading" style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-dark)', textAlign: 'center', marginBottom: 12 }}>
           How It Works
+        </Typography>
+        <Typography style={{ textAlign: 'center', fontSize: 18, opacity: 0.85, marginBottom: 32 }}>
+          In <strong>three quick moves</strong>: shop, earn, save. Just give your phone number – no app, no card.
         </Typography>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 32 }}>
           {[
-            { icon: StoreIcon, title: 'Shop', text: 'Visit participating Downtown Freeport businesses. Simply provide your phone number at checkout.' },
-            { icon: StarIcon, title: 'Earn', text: 'Earn points with every purchase. A portion goes to your store balance; the rest to your shared pool for use anywhere.' },
-            { icon: CardGiftcardIcon, title: 'Redeem', text: 'Redeem points at any participating store. Use store-specific points or shared rewards across the district.' }
-          ].map((step) => (
+            { icon: StoreIcon, title: 'Shop', text: 'Look for the GB Rewards sign and shop like normal.' },
+            { icon: StarIcon, title: 'Give your phone', text: 'At checkout, say your phone number once. Points go to your account.' },
+            { icon: CardGiftcardIcon, title: 'Save cash', text: 'Next time, use your points to lower your bill at any rewards store.' }
+          ].map((step, index) => (
             <div
               key={step.title}
               style={{
@@ -139,23 +187,38 @@ const Landing = ({ title }) => {
                 textAlign: 'center'
               }}
             >
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                <div className="how-step-badge">{index + 1}</div>
+              </div>
               <step.icon style={{ fontSize: 48, color: 'var(--primary-blue)', marginBottom: 16 }} />
-              <Typography style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: 8 }}>{step.title}</Typography>
-              <Typography style={{ color: 'var(--text-dark)', opacity: 0.85, lineHeight: 1.6 }}>{step.text}</Typography>
+              <Typography style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 8 }}>{step.title}</Typography>
+              <Typography style={{ color: 'var(--text-dark)', opacity: 0.92, lineHeight: 1.6, fontSize: 18 }}>
+                {step.text}
+              </Typography>
             </div>
           ))}
         </div>
       </Section>
 
       {/* For Businesses */}
-      <Section id="for-businesses">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 48, alignItems: 'center' }}>
-          <div>
+      <Section id="for-businesses" background="gray">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 32, alignItems: 'stretch' }}>
+          <div
+            style={{
+              background: '#fff',
+              padding: 32,
+              borderRadius: 12,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
+            }}
+          >
             <Typography variant="h2" style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-dark)', marginBottom: 16 }}>
               For Businesses
             </Typography>
-            <Typography style={{ color: 'var(--text-dark)', opacity: 0.9, lineHeight: 1.7, marginBottom: 24 }}>
-              Join the Downtown Freeport rewards network. Attract more customers, reward loyalty, and be part of a connected district-wide program managed by the Downtown Freeport Business Association.
+            <Typography style={{ color: 'var(--text-dark)', opacity: 0.9, lineHeight: 1.7, marginBottom: 16, fontSize: 18 }}>
+              GB Rewards is a simple way to bring shoppers back. When people buy, they earn points. When they return, they use points to save, and you make more sales.
+            </Typography>
+            <Typography style={{ color: 'var(--text-dark)', opacity: 0.9, lineHeight: 1.7, marginBottom: 24, fontSize: 18 }}>
+              No new machines, no cards. Staff just type in a phone number, and you manage everything in a clean web dashboard.
             </Typography>
             <Link to="/vendor/login">
               <Button
@@ -172,24 +235,71 @@ const Landing = ({ title }) => {
               </Button>
             </Link>
           </div>
-          <div style={{ background: 'var(--bg-light)', padding: 32, borderRadius: 12 }}>
-            <Typography style={{ fontWeight: 700, marginBottom: 16 }}>Benefits</Typography>
-            <ul style={{ margin: 0, paddingLeft: 20, lineHeight: 2, color: 'var(--text-dark)', opacity: 0.9 }}>
-              <li>Reach customers across the district</li>
-              <li>Simple point-of-sale integration</li>
-              <li>Shared rewards drive cross-store traffic</li>
-              <li>Backed by DFBA and city program standards</li>
+          <div
+            style={{
+              background: '#fff',
+              padding: 32,
+              borderRadius: 12,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
+            }}
+          >
+            <Typography variant="h2" style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-dark)', marginBottom: 16 }}>
+              For Shoppers
+            </Typography>
+            <Typography style={{ color: 'var(--text-dark)', opacity: 0.9, lineHeight: 1.7, marginBottom: 16, fontSize: 18 }}>
+              Think of GB Rewards like a simple savings jar across your favorite Downtown Freeport spots.
+            </Typography>
+            <ul style={{ margin: 0, paddingLeft: 20, lineHeight: 2, color: 'var(--text-dark)', opacity: 0.9, fontSize: 18 }}>
+              <li>Earn points every time you shop at a GB Rewards store – just give your phone number.</li>
+              <li>Use your points to cut your bill at any store in the network, not just one place.</li>
+              <li>No app, no plastic card, no forms. Your phone number is your rewards ID.</li>
+              <li>See your points and visits in a clean, easy‑to‑read dashboard.</li>
             </ul>
+            <div style={{ marginTop: 20 }}>
+              <Link to="/customer/login">
+                <Button
+                  style={{
+                    background: 'var(--primary-blue)',
+                    color: '#fff',
+                    padding: '14px 28px',
+                    borderRadius: 8,
+                    fontWeight: 700
+                  }}
+                  handleClick={() => {}}
+                >
+                  Join Free Now
+                </Button>
+              </Link>
+            </div>
           </div>
+        </div>
+        <div
+          style={{
+            maxWidth: 900,
+            margin: '32px auto 0',
+            background: '#fff',
+            padding: 32,
+            borderRadius: 12,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
+          }}
+        >
+          <Typography style={{ fontWeight: 800, marginBottom: 16, fontSize: '1.75rem', textAlign: 'center' }}>
+            WIN / WIN / WIN
+          </Typography>
+          <ul style={{ margin: 0, paddingLeft: 20, lineHeight: 1.9, color: 'var(--text-dark)', opacity: 0.9, fontSize: 18 }}>
+            <li><strong>Businesses win:</strong> more repeat visits, bigger baskets, and new customers from other GB Rewards stores.</li>
+            <li><strong>Shoppers win:</strong> real savings at the cash register and surprise rewards for staying loyal to local spots.</li>
+            <li><strong>Community wins:</strong> money stays in Downtown Freeport and helps the whole district feel alive again.</li>
+          </ul>
         </div>
       </Section>
 
       {/* About / Vision */}
       <Section id="about" background="gray">
-        <Typography variant="h2" className="section-heading" style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text-dark)', textAlign: 'center', marginBottom: 24 }}>
+        <Typography variant="h2" className="section-heading" style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-dark)', textAlign: 'center', marginBottom: 24 }}>
           Our Vision
         </Typography>
-        <Typography style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center', color: 'var(--text-dark)', opacity: 0.9, lineHeight: 1.8, fontSize: '1.05rem' }}>
+        <Typography style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center', color: 'var(--text-dark)', opacity: 0.9, lineHeight: 1.8, fontSize: '1.2rem' }}>
           The GB Rewards Program is a Downtown Freeport Business District initiative to bring energy, engagement, and repeat foot traffic back to our city. By creating a connected rewards community across participating stores, we encourage shoppers to explore the district while supporting local businesses. The program is overseen by the Downtown Freeport Business Association in partnership with the Grand Bahama community.
         </Typography>
       </Section>

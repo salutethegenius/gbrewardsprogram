@@ -337,6 +337,69 @@ body div.white-text * {
   color: white !important;
 }
 
+/* Hero title shimmer */
+.hero-title-shimmer {
+  /* Light sky-blue shimmer, stays bright on dark hero */
+  background-image: linear-gradient(120deg, #f9fafb, #bae6fd, #38bdf8, #e0f2fe);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  animation: heroShimmer 3.5s linear infinite;
+}
+
+@keyframes heroShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Confetti overlay on hero */
+.confetti-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 3;
+}
+
+.confetti-piece {
+  position: absolute;
+  top: -10%;
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  opacity: 0.9;
+  animation: confettiFall 3s linear infinite;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translate3d(0, -100%, 0) rotateZ(0deg);
+  }
+  100% {
+    transform: translate3d(0, 120vh, 0) rotateZ(360deg);
+  }
+}
+
+/* How it works: numbered badges */
+.how-step-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--accent-gold);
+  color: #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.15);
+}
+
 /* Hero video: brighter so it shows through overlay */
 .landing-hero-video {
   filter: brightness(1.15);
