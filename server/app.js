@@ -134,11 +134,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-seedAsync()
-  .then(() => {
-    app.listen(PORT, () => console.log(`listening on port ${PORT}`));
-  })
-  .catch((err) => {
-    console.error('Database seed failed:', err);
-    process.exit(1);
-  });
+// Start listening immediately so the proxy gets a response; seed runs in background
+app.listen(PORT, () => {
+  console.log(`listening on port ${PORT}`);
+  seedAsync().catch((err) => console.error('Database seed failed (non-fatal):', err));
+});
