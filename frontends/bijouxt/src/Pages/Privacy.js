@@ -19,7 +19,7 @@ const Privacy = ({ title }) => {
 
         <Typography component="div" style={{ lineHeight: 1.7 }}>
           <p><strong>1. Who we are</strong></p>
-          <p>{Company.name} is a loyalty and rewards platform for the Downtown Freeport business district. We act as a data controller (and, where applicable, processor) for personal data collected through the Service, in line with the Bahamas Data Protection Act.</p>
+          <p>{Company.name} is a loyalty and rewards platform for the Downtown Freeport Business Association. We act as a data controller (and, where applicable, processor) for personal data collected through the Service, in line with the Bahamas Data Protection Act.</p>
 
           <p><strong>2. Data we collect</strong></p>
           <p>We collect: (a) <strong>Customers:</strong> phone number, name, email (optional), and transaction/points data; (b) <strong>Vendors:</strong> business name, email, password (hashed), phone, address; (c) <strong>Admins:</strong> email, password (hashed), name. We also log technical data (e.g. IP, timestamps) for security and audit.</p>

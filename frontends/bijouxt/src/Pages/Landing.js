@@ -300,7 +300,7 @@ const Landing = ({ title }) => {
           Our Vision
         </Typography>
         <Typography style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center', color: 'var(--text-dark)', opacity: 0.9, lineHeight: 1.8, fontSize: '1.2rem' }}>
-          The GB Rewards Program is a Downtown Freeport Business District initiative to bring energy, engagement, and repeat foot traffic back to our city. By creating a connected rewards community across participating stores, we encourage shoppers to explore the district while supporting local businesses. The program is overseen by the Downtown Freeport Business Association in partnership with the Grand Bahama community.
+          The GB Rewards Program is a Downtown Freeport Business Association initiative to bring energy, engagement, and repeat foot traffic back to our city. By creating a connected rewards community across participating stores, we encourage shoppers to explore the district while supporting local businesses. The program is overseen by the Downtown Freeport Business Association in partnership with the Grand Bahama community.
         </Typography>
       </Section>
 

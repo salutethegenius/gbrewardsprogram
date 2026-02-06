@@ -79,10 +79,12 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 
-const frontendOrigin = process.env.FRONTEND_URL;
-// In development (no FRONTEND_URL), allow localhost so the app can be tested locally
-const corsOrigin = frontendOrigin
-  ? [frontendOrigin]
+const frontendUrl = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/$/, '') : null;
+const corsOrigin = frontendUrl
+  ? [
+      frontendUrl,
+      frontendUrl.includes('://www.') ? frontendUrl.replace('://www.', '://') : frontendUrl.replace('://', '://www.')
+    ].filter((v, i, a) => a.indexOf(v) === i)
   : ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://127.0.0.1:3001'];
 app.use(cors({
   origin: corsOrigin,

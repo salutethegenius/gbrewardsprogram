@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import Company from '../utilities/Company';
 import Button from './Button';
 import '../css/button.css';
 
@@ -40,18 +39,39 @@ const Navbar = () => {
           justifyContent: 'space-between'
         }}
       >
-        <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
-          <span
-            className="navbar-logo"
-            style={{
-              fontSize: '1.25rem',
-              fontWeight: 800,
-              color: 'var(--text-light)',
-              letterSpacing: '0.02em'
-            }}
-          >
-            {Company.name}
-          </span>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+          <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: 6, padding: 4, display: 'flex', alignItems: 'center' }}>
+            <img
+              src="/assets/dfba-logo.png"
+              alt="DFBA"
+              style={{ height: 32, width: 'auto', display: 'block' }}
+            />
+          </div>
+          <div style={{ lineHeight: 1.2 }}>
+            <span
+              style={{
+                display: 'block',
+                fontSize: '1rem',
+                fontWeight: 800,
+                color: 'var(--text-light)',
+                letterSpacing: '0.02em'
+              }}
+            >
+              Downtown Freeport
+            </span>
+            <span
+              style={{
+                display: 'block',
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: 'var(--text-light)',
+                opacity: 0.9,
+                letterSpacing: '0.01em'
+              }}
+            >
+              Business Association
+            </span>
+          </div>
         </Link>
 
         <nav className="hide-on-med-and-down" style={{ display: 'flex', alignItems: 'center', gap: 32 }}>

@@ -1,6 +1,6 @@
 # GB Rewards Program
 
-Loyalty and rewards app for the Downtown Freeport business sector: admin, vendors (stores), and customers. Vendors can add customers via QR code scan or manual entry, award and redeem points, and use a shared rewards pool.
+Loyalty and rewards app for the Downtown Freeport Business Association: admin, vendors (stores), and customers. Vendors can add customers via QR code scan or manual entry, award and redeem points, and use a shared rewards pool.
 
 ## Stack
 

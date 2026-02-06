@@ -19,7 +19,7 @@ const Terms = ({ title }) => {
 
         <Typography component="div" style={{ lineHeight: 1.7 }}>
           <p><strong>1. Acceptance</strong></p>
-          <p>By using the {Company.name} platform (the &quot;Service&quot;), you agree to these Terms of Service and our Privacy Policy. The Service is operated for the Downtown Freeport business district and its participating vendors and customers.</p>
+          <p>By using the {Company.name} platform (the &quot;Service&quot;), you agree to these Terms of Service and our Privacy Policy. The Service is operated for the Downtown Freeport Business Association and its participating vendors and customers.</p>
 
           <p><strong>2. Use of the Service</strong></p>
           <p>You may use the Service only for lawful purposes. You must not misuse the Service, attempt to gain unauthorized access, or interfere with other users. Vendors and admins are responsible for keeping their credentials secure.</p>

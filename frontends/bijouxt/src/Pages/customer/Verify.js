@@ -29,7 +29,10 @@ const CustomerVerify = ({ title }) => {
       return;
     }
 
-    const url = `${process.env.REACT_APP_SERVER || '/'}api/customer/verify`;
+    const base = process.env.REACT_APP_SERVER
+      ? process.env.REACT_APP_SERVER.replace(/\/$/, '')
+      : (typeof window !== 'undefined' ? window.location.origin : '');
+    const url = base ? `${base}/api/customer/verify` : '/api/customer/verify';
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
